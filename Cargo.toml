@@ -1,0 +1,23 @@
+[package]
+name = "bank_management_system"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = "0.5.0-rc.1"
+serde = "1.0.126"
+diesel = { version = "1.4.4", features = ["mysql", "numeric"] }
+dotenv = "0.15.0"
+bigdecimal = "0.3.0"
+uuid = { version = "1.0.0", features = ["serde", "v4"] }
+
+[dependencies.rocket_dyn_templates]
+version = "0.1.0-rc.1"
+features = ["handlebars"]
+
+[dependencies.rocket_sync_db_pools]
+version = "0.1.0-rc.1"
+default-features = false
+features = ["diesel_mysql_pool"]

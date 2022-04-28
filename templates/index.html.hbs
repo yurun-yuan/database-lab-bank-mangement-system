@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/favicon" href="images/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Google</title>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+        <div class="images">
+            <a href="dashboard.html"><img src="images/dots.png" alt=""></a>
+        </div>
+    </nav>
+    <div class="logo">
+        <img  src="images/logo.JPEG" alt="">
+    </div>
+    <div class="search">
+        <div class="input">
+            <form name="input" action="search" method="get">
+                <i class="fa fa-search"></i>
+                <input type="text" name="search" id="search-frame">
+                <details>
+                    <summary>Advanced Search Options</summary>
+                    {{#each options}}
+                    <input type="checkbox" name="searchOption" , value={{this}} checked="checked">{{this}}<br />
+                    {{/each}}
+                    {{!-- <input type="checkbox" name="searchOption" value="ClientName" checked="checked">Client name<br />
+                    <input type="checkbox" name="searchOption" , value="AccountID" checked="checked">Account ID<br /> --}}
+                </details>
+                <div class="buttons">
+                    <button><a href="/new/client">New Client</a></button>
+                    <button><a href="#">New Account</a></button>
+                    <button><a href="#">New Loan</a></button>
+                    <button><a href="#">New Payment</a></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

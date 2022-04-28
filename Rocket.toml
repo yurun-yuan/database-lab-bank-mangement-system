@@ -1,0 +1,5 @@
+[default]
+template_dir = "templates/"
+
+[global.databases]
+bank_manage = { url = "mysql://root:mysql@localhost/bank_manage" }

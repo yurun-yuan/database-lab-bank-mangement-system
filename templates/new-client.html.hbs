@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>New client</title>
+  <link rel="stylesheet" href="/form-style.css">
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    <div class="images">
+      <a href="dashboard.html"><img src="images/dots.png" alt=""></a>
+    </div>
+  </nav>
+  <div class="container">
+    <h1>New Client</h1>
+
+    <form action="/new/client" method="post" enctype="multipart/form-data">
+      <fieldset>
+        <legend>Profile</legend>
+        <div class="row">
+          <div class="col">
+            Name <input type="text" type="text" name="client.name">
+            <!-- required -->
+          </div>
+          <div class="col">
+            Tel <input type="text" type="text" name="client.tel">
+            <!-- required pattern=".*@.*"/> -->
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            Address <input type="text" type="text" name="client.address">
+            <!--   required minlength="6" value="" /> -->
+          </div>
+
+          <div class="col">
+            <!--   required minlength="6" value="" /> -->
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contact</legend>
+
+        <div class="row">
+          <div class="col">
+            Contact Name <input type="text" type="text" name="client.contactname">
+            <!-- required -->
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            Contact Email <input type="text" type="text" name="client.contactemail">
+            <!-- <input type="date" name="submission.date" id="date" value="2020&#45;12&#45;26"> -->
+          </div>
+        </div>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>Service</legend>
+
+
+
+      </fieldset>
+
+      <br />
+      <input type="submit" value="Submit" class="is-full-width" />
+    </form>
+  </div>
+</body>
+
+</html>

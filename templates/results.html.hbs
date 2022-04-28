@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/favicon" href="images/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Results</title>
+</head>
+
+<body>
+    <main>
+        <nav class="navbar">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+            <div class="images">
+                <a href="dashboard.html"><img src="images/dots.png" alt=""></a>
+            </div>
+        </nav>
+        <div id="search-settings">
+            <h1 id="search-results-title">Results for {{search}}</h1>
+        </div>
+        <div class="search-results">
+            {{#each results}}
+            <a class="result-entry" href="#">
+                <div class="result-name">{{this.result_name}}</div>
+                <div class="result-desc">{{this.result_desc}}</div>
+            </a>
+            {{/each}}
+        </div>
+    </main>
+</body>
+
+</html>
