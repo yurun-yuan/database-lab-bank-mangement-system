@@ -1,6 +1,8 @@
+use serde::Serialize;
+
 use crate::schema::client;
 
-#[derive(Queryable, Insertable, Default)]
+#[derive(Queryable, Insertable, Default, Serialize, PartialEq, Eq, Hash)]
 #[table_name="client"]
 pub struct Client {
     pub clientID: String,

@@ -1,6 +1,7 @@
 use super::preludes::diesel_prelude::*;
 use super::preludes::rocket_prelude::*;
 use super::BMDBConn;
+use std::collections::HashSet;
 
 #[derive(Debug, PartialEq, FromFormField)]
 pub enum SearchOption {
@@ -31,13 +32,12 @@ macro_rules! get_search_result {
     ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $conn: expr; $($attr: ident),+) => {
         match (&$searchOption, &$conn, &$search){
             (searchOption, conn, search_ref)=>{
-                let mut filter_results: Vec<$struct_name> = Vec::new();
+                let mut filter_results: HashSet<$struct_name> = HashSet::new();
                 $(
                     if(searchOption.contains(&concat!(stringify!($struct_name), ".", stringify!($attr)).to_string())){
                         let search_copy = search_ref.clone();
                         filter_results.extend(
-                            conn
-                                .run(move |conn| {
+                            conn.run(move |conn| {
                                     $table_name::dsl::$table_name
                                         .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
                                         .limit(5)
@@ -54,16 +54,6 @@ macro_rules! get_search_result {
 
 #[get("/search?<search>&<searchOption>")]
 pub async fn search(conn: BMDBConn, search: String, searchOption: Vec<String>) -> Template {
-    // let filter_result = conn
-    //     .run(move |conn| {
-    //         client::dsl::client
-    //             .filter(client::dsl::clientName.like(format!("%{search}%")))
-    //             .limit(5)
-    //             .load::<Client>(conn)
-    //             .expect("Error loading clients")
-    //     })
-    //     .await;
-
     let filter_results = get_search_result!(searchOption;Client;client; search; conn; clientID,clientName,clientAddr);
 
     eprintln!(

@@ -97,16 +97,19 @@ html {
     scrollbar-color: var(--color-lightGrey) var(--bg-primary)
 }
 
-::-webkit-scrollbar {
-    width: 8px
+
+#editbutton {
+    background-color: var(--color-primary);
+    color: #fff !important;
 }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-primary)
+#deletebutton {
+    background-color: #d43939;
+    color: #fff !important;
 }
 
-::-webkit-scrollbar-thumb {
-    background: var(--color-lightGrey)
+#profile-buttons {
+    padding: 1rem 2.5rem;
 }
 
 body {

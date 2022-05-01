@@ -15,6 +15,8 @@ pub mod schema;
 mod search;
 use preludes::diesel_prelude::*;
 use preludes::rocket_prelude::*;
+mod client_profile;
+mod edit_client;
 
 use rocket_sync_db_pools::database;
 
@@ -30,7 +32,11 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 index,
                 search::search,
                 new_client::submit,
-                new_client::new_client
+                new_client::new_client,
+                client_profile::client_profile,
+                edit_client::get_edit_client,
+                edit_client::act_edit_client,
+                edit_client::delete_client
             ],
         )
         .attach(Template::fairing())

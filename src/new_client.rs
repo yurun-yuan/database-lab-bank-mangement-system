@@ -35,8 +35,6 @@ pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Stat
                 ..Client::default()
             };
 
-            // diesel::insert_into(client::table).values()
-
             conn.run(move |conn| {
                 diesel::insert_into(client::table)
                     .values(&new_client)
@@ -46,7 +44,7 @@ pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Stat
 
             Template::render("new-client-success", &form.context)
         }
-        None => Template::render("index", &form.context),
+        None => {Template::render("error", &form.context); todo!()},
     };
 
     (form.context.status(), template)
