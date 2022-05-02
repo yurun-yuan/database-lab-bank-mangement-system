@@ -52,7 +52,7 @@ struct IndexContext {
 #[macro_export]
 macro_rules! get_attr_list_of {
     (Client) => {
-        get_attr_list!(Client; clientID,clientName,clientAddr)
+        get_attr_list!(Client; clientID,clientName,clientAddr,contactName)
     };
 }
 

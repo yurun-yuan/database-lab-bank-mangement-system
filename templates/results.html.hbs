@@ -23,15 +23,32 @@
             </div>
         </nav>
         <div id="search-settings">
-            <h1 id="search-results-title">Results for {{search}}</h1>
+            {{#if search}}
+            <h1 id="search-results-title">Results for "{{search}}"</h1>
+            {{else}}
+            <h1 id="search-results-title">All entries</h1>
+            {{/if}}
         </div>
         <div class="search-results">
+            {{#if results}}
             {{#each results}}
-            <a class="result-entry" href="/profile/client?id={{this.result_name}}">
-                <div class="result-name">{{this.result_name}}</div>
-                <div class="result-desc">{{this.result_desc}}</div>
+            <a class="result-entry" href="/profile/client?id={{this.id}}">
+                <div class="result-name">
+                    <p style="font-size:20px"><b>{{{this.result_name}}}</b></p>
+                </div>
+                <div class="result-id">
+                    <p style="font-size:10px">{{{this.result_subtitle}}}</p>
+                </div>
+                <div class="result-desc">
+                    {{#each this.result_desc}}
+                    <p><b>{{@key}}</b>: {{{this}}}</p>
+                    {{/each}}
+                </div>
             </a>
             {{/each}}
+            {{else}}
+            <p align="center">No results found. <a href="/"><u>Try other key words</u></a></p>
+            {{/if}}
         </div>
     </main>
 </body>

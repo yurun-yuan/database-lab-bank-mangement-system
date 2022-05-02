@@ -8,10 +8,14 @@ edition = "2021"
 [dependencies]
 rocket = "0.5.0-rc.1"
 serde = "1.0.126"
-diesel = { version = "1.4.4", features = ["mysql", "numeric"] }
+diesel = { version = "1.4.8", features = ["mysql", "numeric", "bigdecimal"] }
 dotenv = "0.15.0"
 bigdecimal = "0.3.0"
 uuid = { version = "1.0.0", features = ["serde", "v4"] }
+regex = "1.5.5"
+
+[features]
+bigdecimal=[]
 
 [dependencies.rocket_dyn_templates]
 version = "0.1.0-rc.1"

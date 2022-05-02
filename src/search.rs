@@ -1,7 +1,8 @@
 use super::preludes::diesel_prelude::*;
 use super::preludes::rocket_prelude::*;
 use super::BMDBConn;
-use std::collections::HashSet;
+use regex::{Regex, RegexBuilder};
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, FromFormField)]
 pub enum SearchOption {
@@ -11,8 +12,10 @@ pub enum SearchOption {
 
 #[derive(Debug, FromForm, Serialize)]
 pub struct SearchResultView {
+    id: String,
     result_name: String,
-    result_desc: String,
+    result_subtitle: String,
+    result_desc: HashMap<String, String>,
 }
 
 #[derive(Debug, FromForm, Serialize, Default)]
@@ -28,52 +31,103 @@ macro_rules! get_attr_list {
     };
 }
 
+trait Hightlight {
+    fn highlight(&self, re: Regex, replace_with: &str) -> String;
+    fn to_string(&self) -> String {
+        self.highlight(Regex::new("").unwrap(), "")
+    }
+}
+
+impl Hightlight for String {
+    fn highlight(&self, re: Regex, replace_with: &str) -> String {
+        if self.len() == 0 {
+            self.clone()
+        } else {
+            re.replace_all(self, replace_with).to_string()
+        }
+    }
+}
+
+impl Hightlight for Option<String> {
+    fn highlight(&self, re: Regex, replace_with: &str) -> String {
+        if self.is_none() || self.as_ref().unwrap().len() == 0 {
+            <String as Default>::default()
+        } else {
+            let str = self.as_ref().unwrap();
+            re.replace_all(&str, replace_with).to_string()
+        }
+    }
+}
+
 macro_rules! get_search_result {
     ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $conn: expr; $($attr: ident),+) => {
         match (&$searchOption, &$conn, &$search){
             (searchOption, conn, search_ref)=>{
-                let mut filter_results: HashSet<$struct_name> = HashSet::new();
+                let mut filter_results: HashMap<String, ($struct_name, HashMap<String, String>)> =HashMap::new();
                 $(
                     if(searchOption.contains(&concat!(stringify!($struct_name), ".", stringify!($attr)).to_string())){
                         let search_copy = search_ref.clone();
-                        filter_results.extend(
-                            conn.run(move |conn| {
-                                    $table_name::dsl::$table_name
-                                        .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
-                                        .limit(5)
-                                        .load::<$struct_name>(conn)
-                                        .expect("Error loading clients")
-                                })
-                                .await.into_iter()
-                        )
+                        for client in conn.run(move |conn| {
+                            $table_name::dsl::$table_name
+                                .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
+                                .limit(64)
+                                .load::<$struct_name>(conn)
+                                .expect("Error loading clients")
+                        })
+                        .await {
+                            let new_value=(
+                                stringify!($attr).to_string(),
+                                client.$attr.highlight(
+                                    RegexBuilder::new(&format!("(?P<s>{0})", search_ref))
+                                        .case_insensitive(true)
+                                        .build()
+                                        .expect("Regex pattern error during parsing search keys"),
+                                    "<mark>$s</mark>"
+                                )
+                            );
+                            match filter_results.entry(client.clientID.clone()){
+                                std::collections::hash_map::Entry::Occupied(mut entry)=>{
+                                    entry.get_mut().1.insert(new_value.0, new_value.1);}
+                                std::collections::hash_map::Entry::Vacant(entry)=>{
+                                    entry.insert((client, HashMap::from([new_value])));}
+                            }
+                        }
                     }
                 )*
-        filter_results}}
+                filter_results
+            }
+        }
     };
 }
 
 #[get("/search?<search>&<searchOption>")]
 pub async fn search(conn: BMDBConn, search: String, searchOption: Vec<String>) -> Template {
-    let filter_results = get_search_result!(searchOption;Client;client; search; conn; clientID,clientName,clientAddr);
-
-    eprintln!(
-        "searchOptions: {searchOption:?}, Query {search} invoked, {num} entries found",
-        num = filter_results.len()
-    );
+    let filter_results = get_search_result!(searchOption;Client;client; search; conn; clientID,clientName,clientAddr,contactName);
 
     let mut result_view = ResultContext {
         search: search.clone(),
         ..<ResultContext as Default>::default()
     };
 
-    for client in &filter_results {
+    for mut client in filter_results.into_values() {
         result_view.results.push(SearchResultView {
-            result_name: client.clientID.to_string(),
-            result_desc: client
-                .clientName
-                .as_ref()
-                .unwrap_or(&"No name".to_string())
-                .to_string(),
+            id: client.0.clientID.clone(),
+            result_subtitle: ToString::to_string(
+                client.1.get("clientID").unwrap_or(&client.0.clientID),
+            ),
+            result_name: ToString::to_string(
+                client
+                    .1
+                    .get("clientName")
+                    .unwrap_or(&Hightlight::to_string(&client.0.clientName)),
+            ),
+            result_desc: if search.len() != 0 {
+                client.1.remove("clientID");
+                client.1.remove("clientName");
+                client.1
+            } else {
+                <HashMap<String, String> as Default>::default()
+            },
         });
     }
     Template::render("results", &result_view)

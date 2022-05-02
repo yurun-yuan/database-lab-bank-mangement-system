@@ -25,13 +25,12 @@ pub fn new_client() -> Template {
 pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Status, Template) {
     let template = match form.value {
         Some(ref submission) => {
-            eprintln!("submission: {:#?}", submission);
-
             let new_client = Client {
                 clientID: uuid::Uuid::new_v4().to_string(),
                 clientName: Some(submission.client.name.clone()),
                 clientTel: Some(submission.client.tel.clone()),
                 clientAddr: Some(submission.client.address.clone()),
+                contactName: Some(submission.client.contactname.clone()),
                 ..Client::default()
             };
 
@@ -40,11 +39,15 @@ pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Stat
                     .values(&new_client)
                     .execute(conn)
                     .expect("Error when inserting")
-            }).await;
+            })
+            .await;
 
             Template::render("new-client-success", &form.context)
         }
-        None => {Template::render("error", &form.context); todo!()},
+        None => {
+            Template::render("error", &form.context);
+            todo!()
+        }
     };
 
     (form.context.status(), template)
