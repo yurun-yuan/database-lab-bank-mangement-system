@@ -21,7 +21,12 @@ pub async fn client_profile(conn: BMDBConn, id: String) -> Template {
         .into_iter();
     let client = client.next();
     match client {
-        None => {Template::render("error", &Context::default()); todo!()},
+        None => Template::render(
+            "error",
+            &crate::utility::ErrorContext {
+                info: format!("Error querying client: No client found"),
+            },
+        ),
         Some(client) => Template::render("client-profile", &ClientProfileContext { client }),
     }
 }

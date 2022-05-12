@@ -68,10 +68,8 @@ pub async fn act_edit_client(
         .await;
 
         template = Template::render("update-client-success", &SuccessContext { id });
-        // todo!()
     } else {
         template = Template::render("error", &form.context);
-        todo!()
     };
 
     (form.context.status(), template)
@@ -79,12 +77,20 @@ pub async fn act_edit_client(
 
 #[get("/delete/client?<id>")]
 pub async fn delete_client(conn: BMDBConn, id: String) -> Template {
-    conn.run(move |conn| {
-        diesel::delete(client::table)
-            .filter(client::dsl::clientID.eq(id))
-            .execute(conn)
-            .expect("Error occurs when deleting");
-    })
-    .await;
-    Template::render("delete-client-success", &Context::default())
+    match conn
+        .run(move |conn| {
+            diesel::delete(client::table)
+                .filter(client::dsl::clientID.eq(id))
+                .execute(conn)
+        })
+        .await
+    {
+        Ok(_) => Template::render("delete-client-success", &Context::default()),
+        Err(e) => Template::render(
+            "error",
+            &crate::utility::ErrorContext {
+                info: format!("Error deleting client: {e_info}", e_info = e.to_string()),
+            },
+        ),
+    }
 }
