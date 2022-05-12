@@ -1,9 +1,8 @@
+use crate::schema::*;
 use serde::Serialize;
 
-use crate::schema::client;
-
-#[derive(Queryable, Insertable, Default, Serialize, PartialEq, Eq, Hash)]
-#[table_name="client"]
+#[derive(Queryable, Insertable, Default, Serialize, PartialEq, Eq, AsChangeset, Hash)]
+#[table_name = "client"]
 pub struct Client {
     pub clientID: String,
     pub employeeID: Option<String>,
@@ -15,4 +14,13 @@ pub struct Client {
     pub contactEmail: Option<String>,
     pub contactRelationship: Option<String>,
     pub serviceType: Option<String>,
+}
+
+#[derive(Queryable, Insertable, Default, Serialize, PartialEq, Eq, AsChangeset, Hash)]
+#[table_name = "accountmanagement"]
+pub struct AccountManagement {
+    pub subbranchName: String,
+    pub clientID: String,
+    pub savingAccountID: Option<String>,
+    pub checkingAccountID: Option<String>,
 }
