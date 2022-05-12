@@ -4,6 +4,7 @@ use super::BMDBConn;
 
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct ClientFromForm {
+    clientID: String,
     name: String,
     tel: String,
     address: String,
@@ -26,7 +27,7 @@ pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Stat
     let template = match form.value {
         Some(ref submission) => {
             let new_client = Client {
-                clientID: uuid::Uuid::new_v4().to_string(),
+                clientID: submission.client.clientID.clone(),
                 clientName: Some(submission.client.name.clone()),
                 clientTel: Some(submission.client.tel.clone()),
                 clientAddr: Some(submission.client.address.clone()),

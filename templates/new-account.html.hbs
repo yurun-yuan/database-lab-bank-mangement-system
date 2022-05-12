@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>New account</title>
+    <link rel="stylesheet" href="/form-style.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+        <div class="images">
+            <a href="dashboard.html"><img src="/images/dots.png" alt=""></a>
+        </div>
+    </nav>
+
+    <style>
+        #checking_account_opt{
+            display: none;
+        }
+    </style>
+    <div class="container">
+        <h1>New Account for {{name}}</h1>
+        <h6>{{id}}</h6>
+
+        <form id="account_form" action="/new/account?id={{id}}" method="post" enctype="multipart/form-data">
+            <fieldset>
+                <legend>Basics</legend>
+
+                <script type="text/javascript">
+                    function switchAccountType(elem) {
+                        if (elem.value == "savingAccount") {
+                            document.getElementById('saving_account_opt').style.display = "block";
+                            document.getElementById('checking_account_opt').style.display = "none";
+                        }
+                        else {
+                            document.getElementById('saving_account_opt').style.display = "none";
+                            document.getElementById('checking_account_opt').style.display = "block";
+                        }
+                    }
+                </script>
+                </head>
+
+                <body>
+                    <select class="form-control input-lg" onchange="switchAccountType(this)" name="accountType" form="account_form">
+                        <option value="savingAccount">Saving account</option>
+                        <option value="checkingAccount">Checking account</option>
+                    </select>
+
+                    <div id="shared_opt" class="form-group">
+                        <div class="col">
+                            Subbranch Name <input type="text" name="subbranchName">
+                            <!-- required -->
+                        </div>
+                    </div>
+
+                    <div id="saving_account_opt" class="form-group">
+                        <div class="col">
+                            Currency Type <input type="text" name="currencyType">
+                            <!-- required -->
+                        </div>
+                        <div class="col">
+                            Interest <input type="text" name="interest">
+                            <!-- required pattern=".*@.*"/> -->
+                        </div>
+                    </div>
+
+                    <div id="checking_account_opt" class="form-group">
+                        <div class="col">
+                            Overdraft <input type="text" name="overdraft">
+                            <!-- required -->
+                        </div>
+                    </div>
+            </fieldset>
+
+            <br />
+            <input type="submit" value="Submit" class="is-full-width" />
+        </form>
+    </div>
+</body>
+
+</html>
