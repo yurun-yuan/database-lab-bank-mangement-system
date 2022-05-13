@@ -24,3 +24,10 @@ pub struct AccountManagement {
     pub savingAccountID: Option<String>,
     pub checkingAccountID: Option<String>,
 }
+
+#[derive(Queryable, PartialEq)]
+pub struct Account {
+    pub accountID: String,
+    pub balance: f64,
+    pub openDate: chrono::NaiveDate,
+}

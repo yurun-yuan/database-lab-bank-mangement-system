@@ -4,12 +4,6 @@ use super::BMDBConn;
 use regex::{Regex, RegexBuilder};
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, FromFormField)]
-pub enum SearchOption {
-    ClientName,
-    AccountID,
-}
-
 #[derive(Debug, FromForm, Serialize)]
 pub struct SearchResultView {
     id: String,
@@ -59,25 +53,26 @@ impl Hightlight for Option<String> {
     }
 }
 
+/// Returns `HashMap<PK, (struct of entity, HashMap<attr name, higlighted attr value>)>`
 macro_rules! get_search_result {
-    ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $conn: expr; $($attr: ident),+) => {
+    ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $conn: expr; $pk:ident, $($attr: ident),+) => {
         match (&$searchOption, &$conn, &$search){
             (searchOption, conn, search_ref)=>{
-                let mut filter_results: HashMap<String, ($struct_name, HashMap<String, String>)> =HashMap::new();
+                let mut filter_results: HashMap<String, ($struct_name, HashMap<String, String>)> = HashMap::new();
                 $(
                     if(searchOption.contains(&concat!(stringify!($struct_name), ".", stringify!($attr)).to_string())){
                         let search_copy = search_ref.clone();
-                        for client in conn.run(move |conn| {
+                        let search_results = conn.run(move |conn| {
                             $table_name::dsl::$table_name
                                 .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
                                 .limit(64)
                                 .load::<$struct_name>(conn)
                                 .expect("Error loading clients")
-                        })
-                        .await {
-                            let new_value=(
+                        }).await;
+                        for search_result in search_results {
+                            let new_value = (
                                 stringify!($attr).to_string(),
-                                client.$attr.highlight(
+                                search_result.$attr.highlight(
                                     RegexBuilder::new(&format!("(?P<s>{0})", search_ref))
                                         .case_insensitive(true)
                                         .build()
@@ -85,11 +80,11 @@ macro_rules! get_search_result {
                                     "<mark>$s</mark>"
                                 )
                             );
-                            match filter_results.entry(client.clientID.clone()){
+                            match filter_results.entry(search_result.$pk.clone()){
                                 std::collections::hash_map::Entry::Occupied(mut entry)=>{
                                     entry.get_mut().1.insert(new_value.0, new_value.1);}
                                 std::collections::hash_map::Entry::Vacant(entry)=>{
-                                    entry.insert((client, HashMap::from([new_value])));}
+                                    entry.insert((search_result, HashMap::from([new_value])));}
                             }
                         }
                     }
@@ -102,14 +97,16 @@ macro_rules! get_search_result {
 
 #[get("/search?<search>&<searchOption>")]
 pub async fn search(conn: BMDBConn, search: String, searchOption: Vec<String>) -> Template {
-    let filter_results = get_search_result!(searchOption;Client;client; search; conn; clientID,clientName,clientAddr,contactName);
 
+    // Search among clients
+    let client_filter_results = get_search_result!(searchOption;Client;client; search; conn;clientID, clientID,clientName,clientAddr,contactName);
+   
     let mut result_view = ResultContext {
         search: search.clone(),
         ..<ResultContext as Default>::default()
     };
 
-    for mut client in filter_results.into_values() {
+    for mut client in client_filter_results.into_values() {
         result_view.results.push(SearchResultView {
             id: client.0.clientID.clone(),
             result_subtitle: ToString::to_string(
@@ -130,5 +127,9 @@ pub async fn search(conn: BMDBConn, search: String, searchOption: Vec<String>) -
             },
         });
     }
+
+    // Search among accounts
+
+
     Template::render("results", &result_view)
 }

@@ -52,7 +52,6 @@
                         }
                     }
                 </script>
-                </head>
 
                 <body>
                     <select class="form-control input-lg" onchange="switchAccountType(this)" name="accountType" form="account_form">
@@ -61,6 +60,11 @@
                     </select>
 
                     <div id="shared_opt" class="form-group">
+                        <div class="col">
+                            IDs of associated clients <input type="text" name="clientIDs">
+                            <!-- required -->
+                        </div>
+
                         <div class="col">
                             Subbranch Name <input type="text" name="subbranchName">
                             <!-- required -->

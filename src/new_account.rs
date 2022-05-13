@@ -7,6 +7,7 @@ use diesel::connection::SimpleConnection;
 
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct AccountSubmit {
+    pub clientIDs: String,
     pub accountType: String,
     pub currencyType: String,
     pub subbranchName: String,
@@ -20,9 +21,9 @@ pub struct ClientBasicInfoContext {
     name: String,
 }
 
-#[get("/new/account?<id>&<name>")]
-pub fn new_account(id: String, name: String) -> Template {
-    Template::render("new-account", &ClientBasicInfoContext { id, name })
+#[get("/new/account")]
+pub fn new_account() -> Template {
+    Template::render("new-account", &Context::default())
 }
 
 #[derive(Debug)]
@@ -36,7 +37,69 @@ impl std::fmt::Display for AccountConstraintError {
 
 impl std::error::Error for AccountConstraintError {}
 
-async fn add_account(
+#[post("/new/account", data = "<form>")]
+pub async fn submit(
+    conn: BMDBConn,
+    form: Form<Contextual<'_, AccountSubmit>>,
+) -> (Status, Template) {
+    let template;
+    match form.value {
+        Some(ref submission) => {
+            conn.run(move |conn| conn.batch_execute(&format!("START TRANSACTION")))
+                .await
+                .expect("Error adding account");
+            let result = add_new_account_and_own(&conn, submission).await;
+            match result {
+                Ok(()) => template = Template::render("new-account-success", &form.context),
+                Err(e) => {
+                    conn.run(move |conn| conn.batch_execute(&format!("ROLLBACK")))
+                        .await
+                        .expect(&format!(
+                            "Error rolling back: {e_info}",
+                            e_info = e.to_string()
+                        ));
+                    template = Template::render(
+                        "error",
+                        &ErrorContext {
+                            info: format!(
+                                "Error inserting account: {e_info}",
+                                e_info = e.to_string()
+                            ),
+                        },
+                    );
+                }
+            }
+            conn.run(move |conn| conn.batch_execute(&format!("COMMIT")))
+                .await
+                .expect("Error adding account");
+        }
+        None => {
+            template = Template::render(
+                "error",
+                &ErrorContext {
+                    info: format!("Error inserting new account: failed to receive form"),
+                },
+            );
+        }
+    };
+
+    (form.context.status(), template)
+}
+
+async fn add_new_account_and_own(
+    conn: &BMDBConn,
+    submission: &AccountSubmit,
+) -> Result<(), Box<dyn std::error::Error + Sync + Send + 'static>> {
+    let account_id = add_account_entity(conn, submission).await?;
+    let clientIDs = submission.clientIDs.split_whitespace();
+    for client_id in clientIDs {
+        add_owning_relation(conn, client_id.to_string(), account_id.clone(), submission).await?;
+    }
+    Ok(())
+}
+
+/// Add entity to `account`, `savingaccount`/`checkingaccount`
+pub async fn add_account_entity(
     conn: &BMDBConn,
     submission: &AccountSubmit,
 ) -> Result<String, Box<dyn std::error::Error + Sync + Send + 'static>> {
@@ -100,7 +163,8 @@ async fn add_account(
     Ok(account_id)
 }
 
-async fn add_owning(
+/// Add relationship between client and account. Add entity to `own`, `accountmanagement`.
+pub async fn add_owning_relation(
     conn: &BMDBConn,
     client_id: String,
     account_id: String,
@@ -192,64 +256,4 @@ async fn add_owning(
         (checkingAccount, checkingAccountID)
     );
     Ok(())
-}
-
-async fn add_new_account_and_own(
-    conn: &BMDBConn,
-    client_id: String,
-    submission: &AccountSubmit,
-) -> Result<(), Box<dyn std::error::Error + Sync + Send + 'static>> {
-    let account_id = add_account(conn, submission).await?;
-    add_owning(conn, client_id, account_id, submission).await?;
-    Ok(())
-}
-
-#[post("/new/account?<id>", data = "<form>")]
-pub async fn submit(
-    conn: BMDBConn,
-    id: String,
-    form: Form<Contextual<'_, AccountSubmit>>,
-) -> (Status, Template) {
-    let template;
-    match form.value {
-        Some(ref submission) => {
-            conn.run(move |conn| conn.batch_execute(&format!("START TRANSACTION")))
-                .await
-                .expect("Error adding account");
-            let result = add_new_account_and_own(&conn, id.clone(), submission).await;
-            match result {
-                Ok(()) => template = Template::render("new-account-success", &form.context),
-                Err(e) => {
-                    conn.run(move |conn| conn.batch_execute(&format!("ROLLBACK")))
-                        .await
-                        .expect(&format!(
-                            "Rollback with error {e_info}",
-                            e_info = e.to_string()
-                        ));
-                    template = Template::render(
-                        "error",
-                        &ErrorContext {
-                            info: format!(
-                                "Error inserting account: {e_info}",
-                                e_info = e.to_string()
-                            ),
-                        },
-                    );
-                }
-            }
-            conn.run(move |conn| conn.batch_execute(&format!("COMMIT")))
-                .await
-                .expect("Error adding account");
-        }
-        None => {
-            template = Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error inserting new account: failed to receive form"),
-                },
-            );
-        }
-    };
-
-    (form.context.status(), template)
 }

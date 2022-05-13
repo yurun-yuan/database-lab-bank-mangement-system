@@ -58,14 +58,15 @@ macro_rules! get_attr_list_of {
     (Client) => {
         get_attr_list!(Client; clientID,clientName,clientAddr,contactName)
     };
+    (Account)=>{
+        get_attr_list!(Account; accountID)
+    };
 }
 
 #[get("/")]
 fn index() -> Template {
-    Template::render(
-        "index",
-        &IndexContext {
-            options: get_attr_list_of!(Client),
-        },
-    )
+    let mut options = vec![];
+    options.extend(get_attr_list_of!(Client).into_iter());
+    options.extend(get_attr_list_of!(Account).into_iter());
+    Template::render("index", &IndexContext { options })
 }
