@@ -68,7 +68,7 @@ CREATE TABLE `client` (
   `clientTel` varchar(64) DEFAULT NULL,
   `clientAddr` varchar(64) DEFAULT NULL,
   `contactName` varchar(64) DEFAULT NULL,
-  `contanceTel` varchar(64) DEFAULT NULL,
+  `contactTel` varchar(64) DEFAULT NULL,
   `contactEmail` varchar(64) DEFAULT NULL,
   `contactRelationship` varchar(64) DEFAULT NULL,
   `serviceType` varchar(64) DEFAULT NULL,

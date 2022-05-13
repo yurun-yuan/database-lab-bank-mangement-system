@@ -4,8 +4,6 @@
 #[macro_use]
 pub extern crate rocket;
 
-#[macro_use]
-extern crate diesel;
 extern crate dotenv;
 
 pub mod models;
@@ -13,17 +11,11 @@ mod new_client;
 mod preludes;
 pub mod schema;
 mod search;
-use preludes::diesel_prelude::*;
 use preludes::rocket_prelude::*;
 mod client_profile;
 mod edit_client;
 mod new_account;
 mod utility;
-
-use rocket_sync_db_pools::database;
-
-#[database("bank_manage")]
-pub struct BMDBConn(diesel::MysqlConnection);
 
 #[launch]
 fn rocket() -> rocket::Rocket<rocket::Build> {
@@ -44,8 +36,8 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
             ],
         )
         .attach(Template::fairing())
+        .attach(BankManage::init())
         .mount("/", FileServer::from(relative!("/static")))
-        .attach(BMDBConn::fairing())
 }
 
 #[derive(Serialize)]

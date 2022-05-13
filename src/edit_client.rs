@@ -1,8 +1,4 @@
-use diesel::connection::SimpleConnection;
-
-use super::preludes::diesel_prelude::*;
 use super::preludes::rocket_prelude::*;
-use super::BMDBConn;
 
 #[derive(Serialize)]
 pub struct ClientProfileContext {
@@ -10,29 +6,19 @@ pub struct ClientProfileContext {
 }
 
 #[get("/edit/client?<id>")]
-pub async fn get_edit_client(conn: BMDBConn, id: String) -> Template {
-    let mut client = conn
-        .run(move |conn| {
-            client::dsl::client
-                .filter(client::dsl::clientID.eq(id))
-                .limit(1)
-                .load::<Client>(conn)
-                .expect("Error loading clients")
-        })
-        .await
-        .into_iter();
-    let client = client.next();
-    match client {
-        None => {
-            Template::render("error", &Context::default());
-            todo!()
-        }
-        Some(client) => Template::render("edit-client", &ClientProfileContext { client }),
+pub async fn get_edit_client(db: Connection<BankManage>, id: String) -> Template {
+    match super::client_profile::query_client_by_id(db, id).await {
+        Ok(client) => Template::render("edit-client", &ClientProfileContext { client }),
+        Err(e) => Template::render(
+            "error",
+            &crate::utility::ErrorContext {
+                info: format!("Error loading client: {}", e.to_string()),
+            },
+        ),
     }
 }
 
-#[derive(Debug, FromForm, Default, Serialize, AsChangeset, Clone)]
-#[table_name = "client"]
+#[derive(Debug, FromForm, Default, Serialize, Clone)]
 pub struct ClientFromForm {
     pub clientName: String,
     pub clientTel: String,
@@ -53,20 +39,36 @@ pub struct SuccessContext {
 
 #[post("/edit/client?<id>", data = "<form>")]
 pub async fn act_edit_client(
-    conn: BMDBConn,
+    mut db: Connection<BankManage>,
     id: String,
     form: Form<Contextual<'_, ProfileUpdateSubmit>>,
 ) -> (Status, Template) {
     let template;
     let id_copy = id.clone();
     if let Some(submission) = form.value.clone() {
-        conn.run(move |conn| {
-            diesel::update(client::table)
-                .filter(client::dsl::clientID.eq(id_copy))
-                .set(&submission.client)
-                .execute(conn)
-                .expect("Error occurs when updating");
-        })
+        sqlx::query(
+            "UPDATE client WHERE clientID=? SET 
+
+                clientName = ?,
+                clientTel = ?,
+                clientAddr = ?,
+                contactName = ?,
+                
+                contactEmail = ?,
+                
+                
+                ",
+        )
+        // .bind(submission.client.employeeID)
+        .bind(submission.client.clientName)
+        .bind(submission.client.clientTel)
+        .bind(submission.client.clientAddr)
+        .bind(submission.client.contactName)
+        // .bind(submission.client.contactTel)
+        .bind(submission.client.contactEmail)
+        // .bind(submission.client.contactRelationship)
+        // .bind(submission.client.serviceType)
+        .execute(&mut *db)
         .await;
 
         template = Template::render("update-client-success", &SuccessContext { id });
@@ -78,10 +80,14 @@ pub async fn act_edit_client(
 }
 
 #[get("/delete/client?<id>")]
-pub async fn delete_client(conn: BMDBConn, id: String) -> Template {
+pub async fn delete_client(mut db: Connection<BankManage>, id: String) -> Template {
     eprintln!("delete {id}");
-    match conn
-        .run(move |conn| conn.batch_execute(&format!("delete from client where clientID={}", id)))
+    // match db
+    //     .run(move |db| db.batch_execute(&format!("delete from client where clientID={}", id)))
+    //     .await
+    match sqlx::query("delete from client where clientID=?")
+        .bind(id)
+        .execute(&mut *db)
         .await
     {
         Ok(_) => Template::render("delete-client-success", &Context::default()),

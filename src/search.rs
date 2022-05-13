@@ -1,6 +1,4 @@
-use super::preludes::diesel_prelude::*;
 use super::preludes::rocket_prelude::*;
-use super::BMDBConn;
 use regex::{Regex, RegexBuilder};
 use std::collections::HashMap;
 
@@ -55,20 +53,24 @@ impl Hightlight for Option<String> {
 
 /// Returns `HashMap<PK, (struct of entity, HashMap<attr name, higlighted attr value>)>`
 macro_rules! get_search_result {
-    ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $conn: expr; $pk:ident, $($attr: ident),+) => {
-        match (&$searchOption, &$conn, &$search){
-            (searchOption, conn, search_ref)=>{
+    ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $db: expr; $pk:ident, $($attr: ident),+) => {
+        match (&$searchOption, &mut $db, &$search){
+            (searchOption, db, search_ref)=>{
                 let mut filter_results: HashMap<String, ($struct_name, HashMap<String, String>)> = HashMap::new();
                 $(
                     if(searchOption.contains(&concat!(stringify!($struct_name), ".", stringify!($attr)).to_string())){
                         let search_copy = search_ref.clone();
-                        let search_results = conn.run(move |conn| {
-                            $table_name::dsl::$table_name
-                                .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
-                                .limit(64)
-                                .load::<$struct_name>(conn)
-                                .expect("Error loading clients")
-                        }).await;
+                        let query_pattern=concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'");
+                        let query_statement=format!(concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'"), search_copy);
+                        let search_results=sqlx::query_as::<_, $struct_name>(&query_statement).fetch_all(&mut **db).await.unwrap_or(vec![]);
+                        // let search_results = sqlx::query_as!($struct_name, concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{?}%'"), search_copy).fetch_all(&mut **$db).await.unwrap_or(vec![]);
+                        // db.run(move |db| {
+                        //     $table_name::dsl::$table_name
+                        //         .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
+                        //         .limit(64)
+                        //         .load::<$struct_name>(db)
+                        //         .expect("Error loading clients")
+                        // }).await;
                         for search_result in search_results {
                             let new_value = (
                                 stringify!($attr).to_string(),
@@ -96,11 +98,14 @@ macro_rules! get_search_result {
 }
 
 #[get("/search?<search>&<searchOption>")]
-pub async fn search(conn: BMDBConn, search: String, searchOption: Vec<String>) -> Template {
-
+pub async fn search(
+    mut db: Connection<BankManage>,
+    search: String,
+    searchOption: Vec<String>,
+) -> Template {
     // Search among clients
-    let client_filter_results = get_search_result!(searchOption;Client;client; search; conn;clientID, clientID,clientName,clientAddr,contactName);
-   
+    let client_filter_results = get_search_result!(searchOption;Client;client; search; db;clientID, clientID,clientName,clientAddr,contactName);
+
     let mut result_view = ResultContext {
         search: search.clone(),
         ..<ResultContext as Default>::default()
@@ -129,7 +134,6 @@ pub async fn search(conn: BMDBConn, search: String, searchOption: Vec<String>) -
     }
 
     // Search among accounts
-
 
     Template::render("results", &result_view)
 }

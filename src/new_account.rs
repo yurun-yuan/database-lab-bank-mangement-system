@@ -1,9 +1,9 @@
-use super::preludes::diesel_prelude::*;
+use crate::utility::ErrorContext;
+
 use super::preludes::rocket_prelude::*;
-use super::BMDBConn;
 
 use chrono::prelude::*;
-use diesel::connection::SimpleConnection;
+use sqlx::{query_as, Executor};
 
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct AccountSubmit {
@@ -39,25 +39,23 @@ impl std::error::Error for AccountConstraintError {}
 
 #[post("/new/account", data = "<form>")]
 pub async fn submit(
-    conn: BMDBConn,
+    mut db: Connection<BankManage>,
     form: Form<Contextual<'_, AccountSubmit>>,
 ) -> (Status, Template) {
     let template;
     match form.value {
         Some(ref submission) => {
-            conn.run(move |conn| conn.batch_execute(&format!("START TRANSACTION")))
+            db.execute("START TRANSACTION")
                 .await
-                .expect("Error adding account");
-            let result = add_new_account_and_own(&conn, submission).await;
+                .expect("Error starting a transaction");
+            let result = add_new_account_and_own(&mut db, submission).await;
             match result {
                 Ok(()) => template = Template::render("new-account-success", &form.context),
                 Err(e) => {
-                    conn.run(move |conn| conn.batch_execute(&format!("ROLLBACK")))
-                        .await
-                        .expect(&format!(
-                            "Error rolling back: {e_info}",
-                            e_info = e.to_string()
-                        ));
+                    db.execute("ROLLBACK").await.expect(&format!(
+                        "Error rolling back: {e_info}",
+                        e_info = e.to_string()
+                    ));
                     template = Template::render(
                         "error",
                         &ErrorContext {
@@ -69,9 +67,7 @@ pub async fn submit(
                     );
                 }
             }
-            conn.run(move |conn| conn.batch_execute(&format!("COMMIT")))
-                .await
-                .expect("Error adding account");
+            db.execute("COMMIT").await.expect("Error committing");
         }
         None => {
             template = Template::render(
@@ -87,20 +83,20 @@ pub async fn submit(
 }
 
 async fn add_new_account_and_own(
-    conn: &BMDBConn,
+    db: &mut Connection<BankManage>,
     submission: &AccountSubmit,
 ) -> Result<(), Box<dyn std::error::Error + Sync + Send + 'static>> {
-    let account_id = add_account_entity(conn, submission).await?;
+    let account_id = add_account_entity(db, submission).await?;
     let clientIDs = submission.clientIDs.split_whitespace();
     for client_id in clientIDs {
-        add_owning_relation(conn, client_id.to_string(), account_id.clone(), submission).await?;
+        add_owning_relation(db, client_id.to_string(), account_id.clone(), submission).await?;
     }
     Ok(())
 }
 
 /// Add entity to `account`, `savingaccount`/`checkingaccount`
 pub async fn add_account_entity(
-    conn: &BMDBConn,
+    db: &mut Connection<BankManage>,
     submission: &AccountSubmit,
 ) -> Result<String, Box<dyn std::error::Error + Sync + Send + 'static>> {
     let account_id = uuid::Uuid::new_v4().to_string();
@@ -110,13 +106,13 @@ pub async fn add_account_entity(
     let cur_date_copy = cur_date.clone();
 
     // into table `account`
-    conn.run(move |conn| {
-        conn.batch_execute(&format!(
-            "insert into account(accountID, balance, openDate) values ('{}', {}, '{}')",
-            account_id_copy, 0, cur_date_copy,
-        ))
-    })
-    .await?;
+    sqlx::query("insert into account(accountID, balance, openDate) values (?, ?, ?)")
+        .bind(account_id_copy)
+        .bind(0)
+        .bind(cur_date_copy)
+        .execute(&mut **db)
+        .await?;
+
     match &submission.accountType as &str {
         "savingAccount" => {
             // into table `savingaccount`
@@ -127,16 +123,13 @@ pub async fn add_account_entity(
                 .parse::<f64>()
                 .expect("Invalid interest");
             let currencyType = submission.currencyType.clone();
-            conn.run(move |conn| {
-                        conn.batch_execute(&format!(
-                            "insert into savingaccount(accountID, balance, openDate, interest, currencyType) values ('{}', {}, '{}', {}, '{}')",
-                            account_id_copy,
-                            0,
-                            cur_date_copy,
-                            interest,
-                            currencyType
-                        ))
-                    }).await?;
+            sqlx::query("insert into savingaccount(accountID, balance, openDate, interest, currencyType) values (?, ?, ?, ?, ?)")
+                .bind(account_id_copy)
+                .bind(0)
+                .bind(cur_date_copy)
+                .bind(interest)
+                .bind(currencyType)
+                .execute(&mut **db).await?;
         }
         "checkingAccount" => {
             // into table `checkingaccount`
@@ -146,15 +139,12 @@ pub async fn add_account_entity(
                 .overdraft
                 .parse::<f64>()
                 .expect("Invalid overdraft");
-            conn.run(move |conn| {
-                        conn.batch_execute(&format!(
-                            "insert into checkingAccount(accountID, balance, openDate, overdraft) values ('{}', {}, '{}', {})",
-                            account_id_copy,
-                            0,
-                            cur_date_copy,
-                            overdraft
-                        ))
-                    }).await?;
+            sqlx::query("insert into checkingAccount(accountID, balance, openDate, overdraft) values (?, ?, ?, ?)")
+            .bind(account_id_copy)
+            .bind(0)
+            .bind(cur_date_copy)
+            .bind(overdraft)
+            .execute(&mut **db).await?;
         }
         _ => {
             return Err(Box::new(AccountConstraintError {}));
@@ -165,7 +155,7 @@ pub async fn add_account_entity(
 
 /// Add relationship between client and account. Add entity to `own`, `accountmanagement`.
 pub async fn add_owning_relation(
-    conn: &BMDBConn,
+    db: &mut Connection<BankManage>,
     client_id: String,
     account_id: String,
     submission: &AccountSubmit,
@@ -175,28 +165,24 @@ pub async fn add_owning_relation(
     // into table `own`
     let account_id_copy = account_id.clone();
     let client_id_copy = client_id.clone();
-    conn.run(move |conn| {
-        conn.batch_execute(&format!(
-            "insert into own(accountID, clientID, lastVisitTime) values ('{}', '{}', '{}')",
-            account_id_copy, client_id_copy, cur_time,
-        ))
-    })
-    .await?;
+    sqlx::query("insert into own(accountID, clientID, lastVisitTime) values (?, ?, ?)")
+        .bind(account_id_copy)
+        .bind(client_id_copy)
+        .bind(cur_time)
+        .execute(&mut **db)
+        .await?;
 
     // filter in table `accountmanagement`
     let client_id_copy = client_id.clone();
     let subbranchName_copy = submission.subbranchName.clone();
-    let account_manage_entry = conn
-        .run(move |conn| {
-            accountmanagement::dsl::accountmanagement
-                .filter(crate::accountmanagement::subbranchName.eq(subbranchName_copy))
-                .filter(crate::accountmanagement::clientID.eq(client_id_copy))
-                .limit(1)
-                .load::<AccountManagement>(conn)
-        })
-        .await?
-        .into_iter()
-        .next();
+    let account_manage_entry = sqlx::query_as!(
+        AccountManagement,
+        "SELECT * FROM accountmanagement WHERE subbranchName=? and clientID=?",
+        subbranchName_copy,
+        client_id_copy
+    )
+    .fetch_one(&mut **db)
+    .await;
 
     macro_rules! add_to_accountmanagement {
         ($(($account_type: ident, $attr_name: ident)),+) => {
@@ -205,40 +191,38 @@ pub async fn add_owning_relation(
                 stringify!($account_type) => {
                     // into table `accountmanagement`
                     match account_manage_entry {
-                        None => {
+                        Err(sqlx::Error::RowNotFound) => {
                             let account_manage_entry = AccountManagement {
                                 subbranchName: submission.subbranchName.clone(),
                                 clientID: client_id.clone(),
                                 $attr_name: Some(account_id.clone()),
                                 ..AccountManagement::default()
                             };
-                            conn.run(move |conn| {
-                                diesel::insert_into(accountmanagement::table)
-                                    .values(account_manage_entry)
-                                    .execute(conn)
-                            })
-                            .await?;
+                            sqlx::query("INSERT INTO accountmanagement (subbranchName,clientID,savingAccountID,checkingAccountID)VALUES(?, ?, ?, ?)")
+                            .bind(account_manage_entry.subbranchName)
+                            .bind(account_manage_entry.clientID)
+                            .bind(account_manage_entry.savingAccountID)
+                            .bind(account_manage_entry.checkingAccountID)
+                            .execute(&mut **db).await?;
                         }
-                        Some(mut account_manage_entry) => {
+                        Err(e)=> {return Err(Box::new(e));}
+                        Ok(mut account_manage_entry) => {
                             if !account_manage_entry.$attr_name.is_none() {
                                 eprintln!("More than one saving account for (client, subbranch)");
                                 return Err(Box::new(AccountConstraintError {}));
                             } else {
                                 account_manage_entry.$attr_name = Some(account_id.clone());
-                                conn.run(move |conn| {
-                                    diesel::update(accountmanagement::table)
-                                        .filter(
-                                            crate::accountmanagement::subbranchName
-                                                .eq(account_manage_entry.subbranchName.clone()),
-                                        )
-                                        .filter(
-                                            crate::accountmanagement::clientID
-                                                .eq(account_manage_entry.clientID.clone()),
-                                        )
-                                        .set(&account_manage_entry)
-                                        .execute(conn)
-                                })
-                                .await?;
+                                sqlx::query("UPDATE accountmanagement WHERE subbranchName=? and clientID=? SET
+                                subbranchName=?
+                                clientID=?
+                                savingAccountID=?
+                                checkingAccountID=?
+                                ")
+                                .bind(account_manage_entry.subbranchName)
+                                .bind(account_manage_entry.clientID)
+                                .bind(account_manage_entry.savingAccountID)
+                                .bind(account_manage_entry.checkingAccountID)
+                                .execute(&mut **db).await?;
                             }
                         }
                     }

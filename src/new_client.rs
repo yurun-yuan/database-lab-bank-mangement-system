@@ -1,6 +1,6 @@
-use super::preludes::diesel_prelude::*;
+use crate::utility::ErrorContext;
+
 use super::preludes::rocket_prelude::*;
-use super::BMDBConn;
 
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct ClientFromForm {
@@ -22,8 +22,43 @@ pub fn new_client() -> Template {
     Template::render("new-client", <Submit as Default>::default())
 }
 
+async fn add_client(
+    db: &mut Connection<BankManage>,
+    new_client: Client,
+) -> Result<(), Box<dyn std::error::Error>> {
+    sqlx::query(
+        "INSERT INTO client (clientID,
+                                                employeeID,
+                                                clientName,
+                                                clientTel,
+                                                clientAddr,
+                                                contactName,
+                                                contactTel,
+                                                contactEmail,
+                                                contactRelationship,
+                                                serviceType) VALUES
+                                                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(new_client.clientID)
+    .bind(new_client.employeeID)
+    .bind(new_client.clientName)
+    .bind(new_client.clientTel)
+    .bind(new_client.clientAddr)
+    .bind(new_client.contactName)
+    .bind(new_client.contactTel)
+    .bind(new_client.contactEmail)
+    .bind(new_client.contactRelationship)
+    .bind(new_client.serviceType)
+    .execute(&mut **db)
+    .await?;
+    Ok(())
+}
+
 #[post("/new/client", data = "<form>")]
-pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Status, Template) {
+pub async fn submit(
+    mut db: Connection<BankManage>,
+    form: Form<Contextual<'_, Submit>>,
+) -> (Status, Template) {
     let template = match form.value {
         Some(ref submission) => {
             let new_client = Client {
@@ -34,16 +69,15 @@ pub async fn submit(conn: BMDBConn, form: Form<Contextual<'_, Submit>>) -> (Stat
                 contactName: Some(submission.client.contactname.clone()),
                 ..Client::default()
             };
-
-            conn.run(move |conn| {
-                diesel::insert_into(client::table)
-                    .values(&new_client)
-                    .execute(conn)
-                    .expect("Error when inserting")
-            })
-            .await;
-
-            Template::render("new-client-success", &form.context)
+            match add_client(&mut db, new_client).await {
+                Ok(_) => Template::render("new-client-success", &form.context),
+                Err(e) => Template::render(
+                    "error",
+                    &ErrorContext {
+                        info: format!("{}", e.to_string()),
+                    },
+                ),
+            }
         }
         None => {
             Template::render("error", &form.context);

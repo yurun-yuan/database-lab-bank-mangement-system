@@ -1,32 +1,30 @@
-use super::preludes::diesel_prelude::*;
 use super::preludes::rocket_prelude::*;
-use super::BMDBConn;
 
 #[derive(Serialize)]
 pub struct ClientProfileContext {
     client: Client,
 }
 
+pub async fn query_client_by_id(
+    mut db: Connection<BankManage>,
+    id: String,
+) -> Result<Client, Box<dyn std::error::Error>> {
+    Ok(
+        sqlx::query_as!(Client, "SELECT * FROM client WHERE clientID=?", id)
+            .fetch_one(&mut *db)
+            .await?,
+    )
+}
+
 #[get("/profile/client?<id>")]
-pub async fn client_profile(conn: BMDBConn, id: String) -> Template {
-    let mut client = conn
-        .run(move |conn| {
-            client::dsl::client
-                .filter(client::dsl::clientID.eq(id))
-                .limit(1)
-                .load::<Client>(conn)
-                .expect("Error loading clients")
-        })
-        .await
-        .into_iter();
-    let client = client.next();
-    match client {
-        None => Template::render(
+pub async fn client_profile(db: Connection<BankManage>, id: String) -> Template {
+    match query_client_by_id(db, id).await {
+        Ok(client) => Template::render("client-profile", &ClientProfileContext { client }),
+        Err(e) => Template::render(
             "error",
             &crate::utility::ErrorContext {
-                info: format!("Error querying client: No client found"),
+                info: format!("Error querying client: {}", e.to_string()),
             },
         ),
-        Some(client) => Template::render("client-profile", &ClientProfileContext { client }),
     }
 }
