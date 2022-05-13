@@ -12,7 +12,8 @@ dotenv = "0.15.0"
 uuid = { version = "1.0.0", features = ["serde", "v4"] }
 regex = "1.5.5"
 chrono = "0.4.0"
-sqlx = "0.5.13"
+sqlx = {version="0.5.13", features=["chrono", "bigdecimal", "decimal"]}
+bigdecimal = "0.3.0"
 
 [dependencies.rocket_dyn_templates]
 version = "0.1.0-rc.1"

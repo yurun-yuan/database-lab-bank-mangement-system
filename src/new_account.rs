@@ -1,8 +1,7 @@
 use crate::utility::ErrorContext;
-
 use super::preludes::rocket_prelude::*;
-
 use chrono::prelude::*;
+use rocket::futures::TryStreamExt;
 use sqlx::{query_as, Executor};
 
 #[derive(Debug, FromForm, Default, Serialize)]
@@ -212,16 +211,15 @@ pub async fn add_owning_relation(
                                 return Err(Box::new(AccountConstraintError {}));
                             } else {
                                 account_manage_entry.$attr_name = Some(account_id.clone());
-                                sqlx::query("UPDATE accountmanagement WHERE subbranchName=? and clientID=? SET
-                                subbranchName=?
-                                clientID=?
-                                savingAccountID=?
+                                sqlx::query("UPDATE accountmanagement SET
+                                savingAccountID=?,
                                 checkingAccountID=?
+                                WHERE subbranchName=? and clientID=? 
                                 ")
-                                .bind(account_manage_entry.subbranchName)
-                                .bind(account_manage_entry.clientID)
                                 .bind(account_manage_entry.savingAccountID)
                                 .bind(account_manage_entry.checkingAccountID)
+                                .bind(account_manage_entry.subbranchName)
+                                .bind(account_manage_entry.clientID)
                                 .execute(&mut **db).await?;
                             }
                         }

@@ -9,9 +9,9 @@ extern crate dotenv;
 pub mod models;
 mod new_client;
 mod preludes;
-pub mod schema;
 mod search;
 use preludes::rocket_prelude::*;
+mod account_profile;
 mod client_profile;
 mod edit_client;
 mod new_account;
@@ -32,7 +32,8 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 edit_client::act_edit_client,
                 edit_client::delete_client,
                 new_account::new_account,
-                new_account::submit
+                new_account::submit,
+                account_profile::client_profile
             ],
         )
         .attach(Template::fairing())

@@ -6,8 +6,8 @@ pub struct ClientProfileContext {
 }
 
 #[get("/edit/client?<id>")]
-pub async fn get_edit_client(db: Connection<BankManage>, id: String) -> Template {
-    match super::client_profile::query_client_by_id(db, id).await {
+pub async fn get_edit_client(mut db: Connection<BankManage>, id: String) -> Template {
+    match super::client_profile::query_client_by_id(&mut db, id).await {
         Ok(client) => Template::render("edit-client", &ClientProfileContext { client }),
         Err(e) => Template::render(
             "error",
@@ -46,17 +46,17 @@ pub async fn act_edit_client(
     let template;
     let id_copy = id.clone();
     if let Some(submission) = form.value.clone() {
-        sqlx::query(
-            "UPDATE client WHERE clientID=? SET 
+        let update_result = sqlx::query(
+            "UPDATE client SET 
 
                 clientName = ?,
                 clientTel = ?,
                 clientAddr = ?,
                 contactName = ?,
                 
-                contactEmail = ?,
+                contactEmail = ?
                 
-                
+                WHERE clientID=?
                 ",
         )
         // .bind(submission.client.employeeID)
@@ -68,12 +68,27 @@ pub async fn act_edit_client(
         .bind(submission.client.contactEmail)
         // .bind(submission.client.contactRelationship)
         // .bind(submission.client.serviceType)
+        .bind(id.clone())
         .execute(&mut *db)
         .await;
-
-        template = Template::render("update-client-success", &SuccessContext { id });
+        match update_result {
+            Ok(_) => template = Template::render("update-client-success", &SuccessContext { id }),
+            Err(e) => {
+                template = Template::render(
+                    "error",
+                    &crate::utility::ErrorContext {
+                        info: format!("Error updating client: {}", e.to_string()),
+                    },
+                )
+            }
+        }
     } else {
-        template = Template::render("error", &form.context);
+        template = Template::render(
+            "error",
+            &crate::utility::ErrorContext {
+                info: format!("Error receiving form"),
+            },
+        );
     };
 
     (form.context.status(), template)

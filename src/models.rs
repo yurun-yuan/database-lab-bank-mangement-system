@@ -1,5 +1,8 @@
+use chrono::NaiveDate;
 use serde::Serialize;
-use sqlx::Row;
+use sqlx::types::Decimal;
+
+// use crate::utility::RawSqlDataString;
 
 #[derive(Default, Serialize, PartialEq, Eq, Hash, sqlx::FromRow)]
 pub struct Client {
@@ -15,21 +18,6 @@ pub struct Client {
     pub serviceType: Option<String>,
 }
 
-pub fn row_to_client(row: sqlx::mysql::MySqlRow) -> Result<Client, Box<dyn std::error::Error>> {
-    Ok(Client {
-        clientID: row.try_get("clientID")?,
-        employeeID: Some(row.try_get("employeeID")?),
-        clientName: Some(row.try_get("clientName")?),
-        clientTel: Some(row.try_get("clientTel")?),
-        clientAddr: Some(row.try_get("clientAddr")?),
-        contactName: Some(row.try_get("contactName")?),
-        contactTel: Some(row.try_get("contactTel")?),
-        contactEmail: Some(row.try_get("contactEmail")?),
-        contactRelationship: Some(row.try_get("contactRelationship")?),
-        serviceType: Some(row.try_get("serviceType")?),
-    })
-}
-
 #[derive(Default, Serialize, PartialEq, Eq, Hash)]
 pub struct AccountManagement {
     pub subbranchName: String,
@@ -38,9 +26,26 @@ pub struct AccountManagement {
     pub checkingAccountID: Option<String>,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, sqlx::FromRow, Debug)]
 pub struct Account {
     pub accountID: String,
-    pub balance: f64,
-    pub openDate: chrono::NaiveDate,
+    pub balance: sqlx::types::BigDecimal,
+    pub openDate: NaiveDate,
+}
+
+#[derive(PartialEq, sqlx::FromRow, Debug)]
+pub struct SavingAccount {
+    pub accountID: String,
+    pub balance: Option<sqlx::types::BigDecimal>,
+    pub openDate: Option<NaiveDate>,
+    pub interest: Option<f32>,
+    pub currencyType: Option<String>,
+}
+
+#[derive(PartialEq, sqlx::FromRow, Debug)]
+pub struct CheckingAccount {
+    pub accountID: String,
+    pub balance: Option<sqlx::types::BigDecimal>,
+    pub openDate: Option<NaiveDate>,
+    pub overdraft: Option<sqlx::types::BigDecimal>,
 }

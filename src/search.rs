@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, FromForm, Serialize)]
 pub struct SearchResultView {
-    id: String,
+    href: String,
     result_name: String,
     result_subtitle: String,
     result_desc: HashMap<String, String>,
@@ -51,6 +51,16 @@ impl Hightlight for Option<String> {
     }
 }
 
+fn hightlight_string<'a, Src: Hightlight>(search_ref: &'a str, src: &Src) -> String {
+    src.highlight(
+        RegexBuilder::new(&format!("(?P<s>{0})", search_ref))
+            .case_insensitive(true)
+            .build()
+            .expect("Regex pattern error during parsing search keys"),
+        "<mark>$s</mark>",
+    )
+}
+
 /// Returns `HashMap<PK, (struct of entity, HashMap<attr name, higlighted attr value>)>`
 macro_rules! get_search_result {
     ($searchOption: expr; $struct_name: ident; $table_name: ident;$search: expr; $db: expr; $pk:ident, $($attr: ident),+) => {
@@ -60,27 +70,12 @@ macro_rules! get_search_result {
                 $(
                     if(searchOption.contains(&concat!(stringify!($struct_name), ".", stringify!($attr)).to_string())){
                         let search_copy = search_ref.clone();
-                        let query_pattern=concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'");
-                        let query_statement=format!(concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'"), search_copy);
+                        let query_statement = format!(concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'"), search_copy);
                         let search_results=sqlx::query_as::<_, $struct_name>(&query_statement).fetch_all(&mut **db).await.unwrap_or(vec![]);
-                        // let search_results = sqlx::query_as!($struct_name, concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{?}%'"), search_copy).fetch_all(&mut **$db).await.unwrap_or(vec![]);
-                        // db.run(move |db| {
-                        //     $table_name::dsl::$table_name
-                        //         .filter($table_name::dsl::$attr.like(format!("%{0}%", search_copy)))
-                        //         .limit(64)
-                        //         .load::<$struct_name>(db)
-                        //         .expect("Error loading clients")
-                        // }).await;
                         for search_result in search_results {
                             let new_value = (
                                 stringify!($attr).to_string(),
-                                search_result.$attr.highlight(
-                                    RegexBuilder::new(&format!("(?P<s>{0})", search_ref))
-                                        .case_insensitive(true)
-                                        .build()
-                                        .expect("Regex pattern error during parsing search keys"),
-                                    "<mark>$s</mark>"
-                                )
+                                hightlight_string(search_ref, &search_result.$attr)
                             );
                             match filter_results.entry(search_result.$pk.clone()){
                                 std::collections::hash_map::Entry::Occupied(mut entry)=>{
@@ -113,7 +108,7 @@ pub async fn search(
 
     for mut client in client_filter_results.into_values() {
         result_view.results.push(SearchResultView {
-            id: client.0.clientID.clone(),
+            href: "/profile/client?id=".to_string() + &client.0.clientID,
             result_subtitle: ToString::to_string(
                 client.1.get("clientID").unwrap_or(&client.0.clientID),
             ),
@@ -134,6 +129,37 @@ pub async fn search(
     }
 
     // Search among accounts
+    if searchOption.contains(&"Account.accountID".to_string()) {
+        let account_results: Vec<Account> = sqlx::query_as(&format!(
+            "SELECT * FROM account WHERE accountID LIKE '%{}%'",
+            search
+        ))
+        .fetch_all(&mut *db)
+        .await
+        .unwrap_or_else(|e| {
+            eprintln!("Error querying account: {e_info}", e_info = e.to_string());
+            vec![]
+        });
+
+        eprintln!("results of account: {account_results:?} for {search}",);
+        for account_result in account_results {
+            result_view.results.push(SearchResultView {
+                href: "/profile/account?id=".to_string() + &account_result.accountID,
+                result_name: "Account: ".to_string() + &account_result.accountID,
+                result_subtitle: "".to_string(),
+                result_desc: [
+                    (
+                        "Account ID".to_string(),
+                        hightlight_string(&search, &account_result.accountID),
+                    ),
+                    ("Open Date".to_string(), account_result.openDate.to_string()),
+                    ("Balance".to_string(), account_result.balance.to_string()),
+                ]
+                .into_iter()
+                .collect(),
+            });
+        }
+    }
 
     Template::render("results", &result_view)
 }
