@@ -1,3 +1,5 @@
+use diesel::connection::SimpleConnection;
+
 use super::preludes::diesel_prelude::*;
 use super::preludes::rocket_prelude::*;
 use super::BMDBConn;
@@ -77,12 +79,9 @@ pub async fn act_edit_client(
 
 #[get("/delete/client?<id>")]
 pub async fn delete_client(conn: BMDBConn, id: String) -> Template {
+    eprintln!("delete {id}");
     match conn
-        .run(move |conn| {
-            diesel::delete(client::table)
-                .filter(client::dsl::clientID.eq(id))
-                .execute(conn)
-        })
+        .run(move |conn| conn.batch_execute(&format!("delete from client where clientID={}", id)))
         .await
     {
         Ok(_) => Template::render("delete-client-success", &Context::default()),
