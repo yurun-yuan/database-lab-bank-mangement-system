@@ -37,7 +37,29 @@
                     <!-- required -->
                 </div>
                 <div class="col">
-                    ID <b>{{client.clientID}}</b>
+                    ID <b id="clientID">{{client.clientID}}</b>
+
+                    <button type="button" class="copy_button" onclick="copyEvent('clientID')"><img
+                            src="/images/clipboard.svg" height="18" width="19"></button>
+
+                    <style>
+                        .copy_button {
+                            padding: 0px;
+                            color: #999;
+                            margin-left: 10px;
+                            border: 0;
+                            margin: 0;
+                            background: initial;
+                        }
+                    </style>
+
+                    <script>
+                        function copyEvent(id) {
+                            var str = document.getElementById(id);
+                            window.getSelection().selectAllChildren(str);
+                            document.execCommand("Copy")
+                        }
+                    </script>
                 </div>
                 <div class="col">
                     Tel <b>{{client.clientTel}}</b>
