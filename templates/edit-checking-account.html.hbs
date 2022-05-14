@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Edit saving account</title>
+    <link rel="stylesheet" href="/form-style.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+        <div class="images">
+            <a href="dashboard.html"><img src="/images/dots.png" alt=""></a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Update Checking Account</h1>
+        <h6>{{id}}</h6>
+
+        <form id="account_form" action="/edit/account/checking?id={{id}}" method="post"
+            enctype="multipart/form-data">
+            <fieldset>
+                <legend>Info</legend>
+                    <div id="shared_opt" class="form-group">
+                        <div class="col">
+                            IDs of associated clients <input type="text" name="clientIDs" value="{{clientIDs}}"/>
+                            <!-- required -->
+                        </div>
+                        <div class="col">
+                            <label>
+                                Balance <input type="text" name="balance" value="{{balance}}" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="checking_account_opt" class="form-group">
+                        <div class="col">
+                            Overdraft <input type="text" name="overdraft" value="{{overdraft}}"/>
+                            <!-- required -->
+                        </div>
+                    </div>
+            </fieldset>
+
+            <br />
+            <input type="submit" value="Submit" class="is-full-width" />
+        </form>
+    </div>
+</body>
+
+</html>

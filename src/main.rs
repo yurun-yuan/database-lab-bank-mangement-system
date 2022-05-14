@@ -37,7 +37,8 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 new_account::submit,
                 account_profile::client_profile,
                 edit_account::get_edit_account,
-                edit_account::act_edit_account,
+                edit_account::act_edit_saving_account,
+                edit_account::act_edit_checking_account,
                 edit_account::delete_account
             ],
         )

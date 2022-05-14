@@ -3,6 +3,7 @@ use chrono::prelude::*;
 
 use super::query::SpecificAccount;
 
+#[derive(Clone, Debug)]
 pub enum AccountType {
     SavingAccount,
     CheckingAccount,
@@ -13,6 +14,15 @@ impl From<&SpecificAccount> for AccountType {
         match specific_account {
             SpecificAccount::SavingAccount(_) => AccountType::SavingAccount,
             SpecificAccount::CheckingAccount(_) => AccountType::CheckingAccount,
+        }
+    }
+}
+
+impl std::fmt::Display for AccountType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AccountType::SavingAccount => write!(f, "savingAccount"),
+            AccountType::CheckingAccount => write!(f, "checkingAccount"),
         }
     }
 }

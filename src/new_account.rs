@@ -1,15 +1,10 @@
 use super::preludes::rocket_prelude::*;
-use crate::account_manage::insert::*;
 use crate::utility::ErrorContext;
+use crate::{account_manage::insert::*, start_transaction};
+use crate::{commit, rollback};
 use chrono::prelude::*;
 use rocket::futures::TryStreamExt;
 use sqlx::{query_as, Executor};
-
-#[derive(Debug, FromForm, Default, Serialize)]
-pub struct ClientBasicInfoContext {
-    id: String,
-    name: String,
-}
 
 #[get("/new/account")]
 pub fn new_account() -> Template {
@@ -24,17 +19,15 @@ pub async fn submit(
     let template;
     match form.value {
         Some(ref submission) => {
-            db.execute("START TRANSACTION")
-                .await
-                .expect("Error starting a transaction");
+            start_transaction!(db);
             let result = add_new_account_and_own(&mut db, submission).await;
             match result {
-                Ok(()) => template = Template::render("new-account-success", &form.context),
+                Ok(()) => {
+                    commit!(db);
+                    template = Template::render("new-account-success", &form.context)
+                }
                 Err(e) => {
-                    db.execute("ROLLBACK").await.expect(&format!(
-                        "Error rolling back: {e_info}",
-                        e_info = e.to_string()
-                    ));
+                    rollback!(db);
                     template = Template::render(
                         "error",
                         &ErrorContext {
@@ -46,7 +39,6 @@ pub async fn submit(
                     );
                 }
             }
-            db.execute("COMMIT").await.expect("Error committing");
         }
         None => {
             template = Template::render(

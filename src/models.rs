@@ -49,3 +49,21 @@ pub struct CheckingAccount {
     pub openDate: Option<NaiveDate>,
     pub overdraft: Option<sqlx::types::BigDecimal>,
 }
+
+#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone)]
+pub struct Loan {
+    pub loadID: String,
+    pub subbranchName: String,
+}
+
+#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone)]
+pub struct Payment {
+    pub loadID: String,
+    pub amount: sqlx::types::BigDecimal,
+}
+
+#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone)]
+pub struct ReceiveLoan {
+    pub loadID: String,
+    pub clientID: String,
+}

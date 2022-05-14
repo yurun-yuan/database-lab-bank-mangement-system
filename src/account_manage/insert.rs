@@ -5,6 +5,7 @@ use chrono::prelude::*;
 pub struct AccountSubmit {
     pub clientIDs: String,
     pub accountType: String,
+    pub balance: String,
     pub currencyType: String,
     pub subbranchName: String,
     pub overdraft: String,
@@ -18,7 +19,14 @@ pub async fn add_new_account_and_own(
     let account_id = add_account_entity(db, submission).await?;
     let clientIDs = submission.clientIDs.split_whitespace();
     for client_id in clientIDs {
-        add_owning_relation(db, client_id.to_string(), account_id.clone(), submission).await?;
+        add_owning_relation(
+            db,
+            client_id.to_string(),
+            account_id.clone(),
+            submission.accountType.clone(),
+            submission.subbranchName.clone(),
+        )
+        .await?;
     }
     Ok(())
 }
@@ -34,7 +42,7 @@ pub async fn add_account_entity(
     // into table `account`
     sqlx::query("insert into account(accountID, balance, openDate) values (?, ?, ?)")
         .bind(&account_id)
-        .bind(0)
+        .bind(&submission.balance)
         .bind(&cur_date)
         .execute(&mut **db)
         .await?;
@@ -91,7 +99,8 @@ pub async fn add_owning_relation(
     db: &mut Connection<BankManage>,
     client_id: String,
     account_id: String,
-    submission: &AccountSubmit,
+    account_type: String,
+    subbranchName: String,
 ) -> Result<(), GenericError> {
     let cur_time = Local::now().format("%Y-%m-%d %T").to_string();
 
@@ -107,7 +116,7 @@ pub async fn add_owning_relation(
     let account_manage_entry = sqlx::query_as!(
         AccountManagement,
         "SELECT * FROM accountmanagement WHERE subbranchName=? and clientID=?",
-        submission.subbranchName,
+        subbranchName,
         client_id
     )
     .fetch_one(&mut **db)
@@ -115,14 +124,14 @@ pub async fn add_owning_relation(
 
     macro_rules! add_to_accountmanagement {
         ($(($account_type: ident, $attr_name: ident)),+) => {
-            match  &submission.accountType as &str{
+            match  &account_type as &str{
             $(
                 stringify!($account_type) => {
                     // into table `accountmanagement`
                     match account_manage_entry {
                         Err(sqlx::Error::RowNotFound) => {
                             let account_manage_entry = AccountManagement {
-                                subbranchName: submission.subbranchName.clone(),
+                                subbranchName: subbranchName.clone(),
                                 clientID: client_id.clone(),
                                 $attr_name: Some(account_id.clone()),
                                 ..AccountManagement::default()
