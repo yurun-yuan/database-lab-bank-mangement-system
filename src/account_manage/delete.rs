@@ -75,7 +75,7 @@ pub async fn delete_account_entity(
     eprintln!("specific account {to_update_account_table} removed {id}");
 
     // delete from `account`
-    sqlx::query(&format!("DELETE FROM account WHERE accountID=?"))
+    sqlx::query("DELETE FROM account WHERE accountID=?")
         .bind(&id)
         .execute(&mut **db)
         .await?;

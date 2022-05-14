@@ -44,7 +44,7 @@ macro_rules! error_template {
     ($error: ident, $info: literal) => {
         Template::render(
             "error",
-            &crate::utility::ErrorContext {
+            &$crate::utility::ErrorContext {
                 info: format!("{}: {}", $info, $error.to_string()),
             },
         )
@@ -55,7 +55,7 @@ macro_rules! error_template {
     ($info: literal) => {
         Template::render(
             "error",
-            &crate::utility::ErrorContext {
+            &$crate::utility::ErrorContext {
                 info: format!("{}", $info),
             },
         )

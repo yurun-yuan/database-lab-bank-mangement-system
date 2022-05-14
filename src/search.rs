@@ -32,7 +32,7 @@ trait Hightlight {
 
 impl Hightlight for String {
     fn highlight(&self, re: Regex, replace_with: &str) -> String {
-        if self.len() == 0 {
+        if self.is_empty() {
             self.clone()
         } else {
             re.replace_all(self, replace_with).to_string()
@@ -42,16 +42,16 @@ impl Hightlight for String {
 
 impl Hightlight for Option<String> {
     fn highlight(&self, re: Regex, replace_with: &str) -> String {
-        if self.is_none() || self.as_ref().unwrap().len() == 0 {
+        if self.is_none() || self.as_ref().unwrap().is_empty() {
             <String as Default>::default()
         } else {
             let str = self.as_ref().unwrap();
-            re.replace_all(&str, replace_with).to_string()
+            re.replace_all(str, replace_with).to_string()
         }
     }
 }
 
-fn hightlight_string<'a, Src: Hightlight>(search_ref: &'a str, src: &Src) -> String {
+fn hightlight_string<Src: Hightlight>(search_ref: &'_ str, src: &Src) -> String {
     src.highlight(
         RegexBuilder::new(&format!("(?P<s>{0})", search_ref))
             .case_insensitive(true)
@@ -117,7 +117,7 @@ pub async fn search(
                     .get("clientName")
                     .unwrap_or(&Hightlight::to_string(&client.0.clientName)),
             ),
-            result_desc: if search.len() != 0 {
+            result_desc: if !search.is_empty() {
                 client.1.remove("clientID");
                 client.1.remove("clientName");
                 client.1
@@ -136,7 +136,7 @@ pub async fn search(
         .fetch_all(&mut *db)
         .await
         .unwrap_or_else(|e| {
-            eprintln!("Error querying account: {e_info}", e_info = e.to_string());
+            eprintln!("Error querying account: {e_info}", e_info = e);
             vec![]
         });
 

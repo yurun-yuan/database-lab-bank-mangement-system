@@ -11,21 +11,18 @@ use crate::{
 #[get("/edit/account?<id>")]
 pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Template {
     use super::account_manage::query::*;
-    let clients;
-    match query_associated_clients(&mut db, id.clone()).await {
+    let clients = match query_associated_clients(&mut db, id.clone()).await {
         Err(e) => return error_template!(e, "Error fetching account info"),
-        Ok(result) => {
-            clients = result.into_iter().fold(String::new(), |joined, cur| {
-                joined + &" ".to_string() + &cur
-            })
-        }
-    }
+        Ok(result) => result
+            .into_iter()
+            .fold(String::new(), |joined, cur| joined + " " + &cur),
+    };
     match query_account_by_id(&mut db, id).await {
         Err(e) => return error_template!(e, "Error fetching account info"),
         Ok((specific_account, _)) => match specific_account {
             SpecificAccount::SavingAccount(saving_account) => {
                 eprintln!("saving account: {saving_account:?}");
-                return Template::render(
+                Template::render(
                     "edit-saving-account",
                     HashMap::from([
                         ("id".to_string(), saving_account.accountID),
@@ -36,32 +33,32 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
                         ),
                         (
                             "currencyType".to_string(),
-                            saving_account.currencyType.unwrap_or("None".to_string()),
+                            saving_account
+                                .currencyType
+                                .unwrap_or_else(|| "None".to_string()),
                         ),
                         (
                             "interest".to_string(),
                             saving_account.interest.unwrap_or(0f32).to_string(),
                         ),
                     ]),
-                );
-            }
-            SpecificAccount::CheckingAccount(checking_account) => {
-                return Template::render(
-                    "edit-checking-account",
-                    HashMap::from([
-                        ("id".to_string(), checking_account.accountID),
-                        ("clientIDs".to_string(), clients),
-                        (
-                            "balance".to_string(),
-                            checking_account.balance.unwrap().to_string(),
-                        ),
-                        (
-                            "overdraft".to_string(),
-                            checking_account.overdraft.unwrap().to_string(),
-                        ),
-                    ]),
                 )
             }
+            SpecificAccount::CheckingAccount(checking_account) => Template::render(
+                "edit-checking-account",
+                HashMap::from([
+                    ("id".to_string(), checking_account.accountID),
+                    ("clientIDs".to_string(), clients),
+                    (
+                        "balance".to_string(),
+                        checking_account.balance.unwrap().to_string(),
+                    ),
+                    (
+                        "overdraft".to_string(),
+                        checking_account.overdraft.unwrap().to_string(),
+                    ),
+                ]),
+            ),
         },
     }
 }
@@ -158,18 +155,17 @@ pub async fn act_edit_checking_account(
 
 #[get("/delete/account?<id>")]
 pub async fn delete_account(mut db: Connection<BankManage>, id: String) -> Template {
-    let template;
     start_transaction!(db);
-    match delete_account_and_own(&mut db, id).await {
+    let template = match delete_account_and_own(&mut db, id).await {
         Ok(_) => {
             commit!(db);
-            template = Template::render("delete-account-success", &Context::default())
+            Template::render("delete-account-success", &Context::default())
         }
         Err(e) => {
             rollback!(db);
-            template = error_template!(e, "Error deleting account")
+            error_template!(e, "Error deleting account")
         }
-    }
+    };
 
     template
 }

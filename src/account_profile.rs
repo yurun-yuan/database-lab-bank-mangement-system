@@ -15,11 +15,10 @@ pub struct AccountProfileContext {
 
 #[get("/profile/account?<id>")]
 pub async fn client_profile(mut db: Connection<BankManage>, id: String) -> Template {
-    let associated_clients;
-    match query_associated_clients(&mut db, id.clone()).await {
-        Ok(clients) => associated_clients = clients,
+    let associated_clients = match query_associated_clients(&mut db, id.clone()).await {
+        Ok(clients) => clients,
         Err(e) => return error_template!(e),
-    }
+    };
     match query_account_by_id(&mut db, id.clone()).await {
         Ok((specific_account, subbranch)) => match specific_account {
             SpecificAccount::SavingAccount(saving_account) => Template::render(
@@ -37,7 +36,7 @@ pub async fn client_profile(mut db: Connection<BankManage>, id: String) -> Templ
                         ),
                         (
                             "Currency type".to_string(),
-                            saving_account.currencyType.unwrap_or("None".to_string()),
+                            saving_account.currencyType.unwrap_or_else(|| "None".to_string()),
                         ),
                     ],
                     associated_clients,

@@ -28,7 +28,7 @@ pub async fn query_account_by_id(
                 .try_get::<'_, String, _>(0)
             {
                 Ok(subbranch) => {
-                    return Ok((SpecificAccount::SavingAccount(saving_account), subbranch))
+                    Ok((SpecificAccount::SavingAccount(saving_account), subbranch))
                 }
                 Err(e) => Err(Box::new(e)),
             }
@@ -52,7 +52,7 @@ pub async fn query_account_by_id(
                     .try_get::<'_, String, _>(0)
                     {
                         Ok(subbranch) => {
-                            return Ok((
+                            Ok((
                                 SpecificAccount::CheckingAccount(checking_account),
                                 subbranch,
                             ))
@@ -60,11 +60,11 @@ pub async fn query_account_by_id(
                         Err(e) => Err(Box::new(e)),
                     }
                 }
-                Err(sqlx::Error::RowNotFound) => return Err(Box::new(sqlx::Error::RowNotFound)),
-                Err(e) => return Err(Box::new(e)),
+                Err(sqlx::Error::RowNotFound) => Err(Box::new(sqlx::Error::RowNotFound)),
+                Err(e) => Err(Box::new(e)),
             }
         }
-        Err(e) => return Err(Box::new(e)),
+        Err(e) => Err(Box::new(e)),
     }
 }
 

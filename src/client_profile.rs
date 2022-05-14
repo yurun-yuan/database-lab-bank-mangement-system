@@ -39,8 +39,7 @@ async fn query_associated_accounts(
 #[get("/profile/client?<id>")]
 pub async fn client_profile(mut db: Connection<BankManage>, id: String) -> Template {
     let accounts = query_associated_accounts(&mut db, id.clone())
-        .await
-        .unwrap_or(vec![]);
+        .await.unwrap_or_default();
     match query_client_by_id(&mut db, id.clone()).await {
         Ok(client) => {
             Template::render("client-profile", &ClientProfileContext { client, accounts })
