@@ -4,9 +4,8 @@ use sqlx::Executor;
 
 use super::preludes::rocket_prelude::*;
 use crate::{
-    account_manage::{delete::*, insert::*, query::*, update::*},
-    commit, rollback, start_transaction,
-    utility::*,
+    account_manage::{delete::*, update::*},
+    commit, error_template, rollback, start_transaction,
 };
 
 #[get("/edit/account?<id>")]
@@ -14,14 +13,7 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
     use super::account_manage::query::*;
     let clients;
     match query_associated_clients(&mut db, id.clone()).await {
-        Err(e) => {
-            return Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error fetching account info: {}", e.to_string()),
-                },
-            )
-        }
+        Err(e) => return error_template!(e, "Error fetching account info"),
         Ok(result) => {
             clients = result.into_iter().fold(String::new(), |joined, cur| {
                 joined + &" ".to_string() + &cur
@@ -29,15 +21,8 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
         }
     }
     match query_account_by_id(&mut db, id).await {
-        Err(e) => {
-            return Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error fetching account info: {}", e.to_string()),
-                },
-            )
-        }
-        Ok((specific_account, subbranch)) => match specific_account {
+        Err(e) => return error_template!(e, "Error fetching account info"),
+        Ok((specific_account, _)) => match specific_account {
             SpecificAccount::SavingAccount(saving_account) => {
                 eprintln!("saving account: {saving_account:?}");
                 return Template::render(
@@ -90,12 +75,7 @@ pub async fn act_edit_saving_account(
     if form.value.is_none() {
         return (
             form.context.status(),
-            Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error receiving form"),
-                },
-            ),
+            error_template!("Error receiving form"),
         );
     }
     let submission = form.value.as_ref().unwrap();
@@ -125,12 +105,7 @@ pub async fn act_edit_saving_account(
             rollback!(db);
             (
                 form.context.status(),
-                Template::render(
-                    "error",
-                    &ErrorContext {
-                        info: format!("Error updating account: {}", e.to_string()),
-                    },
-                ),
+                error_template!(e, "Error updating account"),
             )
         }
     }
@@ -145,12 +120,7 @@ pub async fn act_edit_checking_account(
     if form.value.is_none() {
         return (
             form.context.status(),
-            Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error receiving form"),
-                },
-            ),
+            error_template!("Error receiving form"),
         );
     }
     let submission = form.value.as_ref().unwrap();
@@ -180,12 +150,7 @@ pub async fn act_edit_checking_account(
             rollback!(db);
             (
                 form.context.status(),
-                Template::render(
-                    "error",
-                    &ErrorContext {
-                        info: format!("Error updating account: {}", e.to_string()),
-                    },
-                ),
+                error_template!(e, "Error updating account"),
             )
         }
     }
@@ -202,12 +167,7 @@ pub async fn delete_account(mut db: Connection<BankManage>, id: String) -> Templ
         }
         Err(e) => {
             rollback!(db);
-            template = Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error deleting account: {e_info}", e_info = e.to_string()),
-                },
-            )
+            template = error_template!(e, "Error deleting account")
         }
     }
 

@@ -1,13 +1,8 @@
 use std::collections::HashSet;
 
 use crate::{preludes::rocket_prelude::*, utility::GenericError};
-use rocket::futures::TryStreamExt;
-use sqlx::types::BigDecimal;
 
-use super::{
-    delete::AccountType,
-    query::{query_account_by_id, SpecificAccount},
-};
+use super::{delete::AccountType, query::query_account_by_id};
 
 // Modify table `account`
 async fn update_generic_account(

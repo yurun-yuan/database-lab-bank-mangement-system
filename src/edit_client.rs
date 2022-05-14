@@ -1,3 +1,5 @@
+use crate::error_template;
+
 use super::preludes::rocket_prelude::*;
 
 #[derive(Serialize)]
@@ -9,12 +11,7 @@ pub struct ClientProfileContext {
 pub async fn get_edit_client(mut db: Connection<BankManage>, id: String) -> Template {
     match super::client_profile::query_client_by_id(&mut db, id).await {
         Ok(client) => Template::render("edit-client", &ClientProfileContext { client }),
-        Err(e) => Template::render(
-            "error",
-            &crate::utility::ErrorContext {
-                info: format!("Error loading client: {}", e.to_string()),
-            },
-        ),
+        Err(e) => error_template!(e, "Error loading client"),
     }
 }
 
@@ -70,24 +67,12 @@ pub async fn act_edit_client(
         .bind(id.clone())
         .execute(&mut *db)
         .await;
-        match update_result {
-            Ok(_) => template = Template::render("update-client-success", &SuccessContext { id }),
-            Err(e) => {
-                template = Template::render(
-                    "error",
-                    &crate::utility::ErrorContext {
-                        info: format!("Error updating client: {}", e.to_string()),
-                    },
-                )
-            }
-        }
+        template = match update_result {
+            Ok(_) => Template::render("update-client-success", &SuccessContext { id }),
+            Err(e) => error_template!(e, "Error updating client"),
+        };
     } else {
-        template = Template::render(
-            "error",
-            &crate::utility::ErrorContext {
-                info: format!("Error receiving form"),
-            },
-        );
+        template = error_template!("Error receiving form");
     };
 
     (form.context.status(), template)
@@ -96,20 +81,12 @@ pub async fn act_edit_client(
 #[get("/delete/client?<id>")]
 pub async fn delete_client(mut db: Connection<BankManage>, id: String) -> Template {
     eprintln!("delete {id}");
-    // match db
-    //     .run(move |db| db.batch_execute(&format!("delete from client where clientID={}", id)))
-    //     .await
     match sqlx::query("delete from client where clientID=?")
         .bind(id)
         .execute(&mut *db)
         .await
     {
         Ok(_) => Template::render("delete-client-success", &Context::default()),
-        Err(e) => Template::render(
-            "error",
-            &crate::utility::ErrorContext {
-                info: format!("Error deleting client: {e_info}", e_info = e.to_string()),
-            },
-        ),
+        Err(e) => error_template!(e, "Error deleting client"),
     }
 }

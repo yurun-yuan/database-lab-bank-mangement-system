@@ -1,6 +1,6 @@
 use rocket::futures::TryStreamExt;
 
-use crate::utility::GenericError;
+use crate::{utility::GenericError, error_template};
 
 use super::preludes::rocket_prelude::*;
 use std::vec;
@@ -45,11 +45,6 @@ pub async fn client_profile(mut db: Connection<BankManage>, id: String) -> Templ
         Ok(client) => {
             Template::render("client-profile", &ClientProfileContext { client, accounts })
         }
-        Err(e) => Template::render(
-            "error",
-            &crate::utility::ErrorContext {
-                info: format!("Error querying client: {}", e.to_string()),
-            },
-        ),
+        Err(e) => error_template!(e, "Error querying client"),
     }
 }

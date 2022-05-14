@@ -1,10 +1,7 @@
 use super::preludes::rocket_prelude::*;
-use crate::utility::ErrorContext;
 use crate::{account_manage::insert::*, start_transaction};
-use crate::{commit, rollback};
-use chrono::prelude::*;
-use rocket::futures::TryStreamExt;
-use sqlx::{query_as, Executor};
+use crate::{commit, error_template, rollback};
+use sqlx::{Executor};
 
 #[get("/new/account")]
 pub fn new_account() -> Template {
@@ -28,26 +25,11 @@ pub async fn submit(
                 }
                 Err(e) => {
                     rollback!(db);
-                    template = Template::render(
-                        "error",
-                        &ErrorContext {
-                            info: format!(
-                                "Error inserting account: {e_info}",
-                                e_info = e.to_string()
-                            ),
-                        },
-                    );
+                    template = error_template!(e, "Error inserting account");
                 }
             }
         }
-        None => {
-            template = Template::render(
-                "error",
-                &ErrorContext {
-                    info: format!("Error inserting new account: failed to receive form"),
-                },
-            );
-        }
+        None => template = error_template!("Error inserting new account: failed to receive form"),
     };
 
     (form.context.status(), template)

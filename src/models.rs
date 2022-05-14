@@ -1,8 +1,5 @@
 use chrono::NaiveDate;
 use serde::Serialize;
-use sqlx::types::Decimal;
-
-// use crate::utility::RawSqlDataString;
 
 #[derive(Default, Serialize, PartialEq, Eq, Hash, sqlx::FromRow)]
 pub struct Client {

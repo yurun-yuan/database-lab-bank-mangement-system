@@ -1,4 +1,7 @@
-use crate::utility::{ErrorContext, GenericError};
+use crate::{
+    error_template,
+    utility::{GenericError},
+};
 
 use super::preludes::rocket_prelude::*;
 
@@ -71,18 +74,10 @@ pub async fn submit(
             };
             match add_client(&mut db, new_client).await {
                 Ok(_) => Template::render("new-client-success", &form.context),
-                Err(e) => Template::render(
-                    "error",
-                    &ErrorContext {
-                        info: format!("{}", e.to_string()),
-                    },
-                ),
+                Err(e) => error_template!(e, "Error adding client"),
             }
         }
-        None => {
-            Template::render("error", &form.context);
-            todo!()
-        }
+        None => error_template!("Error adding client: failed to receive form"),
     };
 
     (form.context.status(), template)
