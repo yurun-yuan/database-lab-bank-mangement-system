@@ -1,6 +1,6 @@
+use super::preludes::rocket_prelude::*;
 use crate::account_manage::query::*;
 use crate::error_template;
-use super::preludes::rocket_prelude::*;
 
 #[derive(Serialize)]
 pub struct AccountProfileContext {

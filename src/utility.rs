@@ -1,4 +1,4 @@
-use std::{usize};
+use std::usize;
 
 use serde::Serialize;
 

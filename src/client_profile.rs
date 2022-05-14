@@ -1,6 +1,6 @@
 use rocket::futures::TryStreamExt;
 
-use crate::{utility::GenericError, error_template};
+use crate::{error_template, utility::GenericError};
 
 use super::preludes::rocket_prelude::*;
 use std::vec;

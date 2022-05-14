@@ -1,7 +1,4 @@
-use crate::{
-    error_template,
-    utility::{GenericError},
-};
+use crate::{error_template, utility::GenericError};
 
 use super::preludes::rocket_prelude::*;
 

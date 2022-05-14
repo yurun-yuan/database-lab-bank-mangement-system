@@ -1,7 +1,7 @@
 use super::preludes::rocket_prelude::*;
 use crate::{account_manage::insert::*, start_transaction};
 use crate::{commit, error_template, rollback};
-use sqlx::{Executor};
+use sqlx::Executor;
 
 #[get("/new/account")]
 pub fn new_account() -> Template {
