@@ -1,21 +1,19 @@
+use sqlx::Executor;
+
 use super::preludes::rocket_prelude::*;
+use crate::{
+    account_manage::{delete::*, insert::*, query::*},
+    utility::ErrorContext,
+};
 
 #[derive(Serialize)]
 pub struct ClientProfileContext {
     client: Client,
 }
 
-#[get("/edit/client?<id>")]
-pub async fn get_edit_client(mut db: Connection<BankManage>, id: String) -> Template {
-    match super::client_profile::query_client_by_id(&mut db, id).await {
-        Ok(client) => Template::render("edit-client", &ClientProfileContext { client }),
-        Err(e) => Template::render(
-            "error",
-            &crate::utility::ErrorContext {
-                info: format!("Error loading client: {}", e.to_string()),
-            },
-        ),
-    }
+#[get("/edit/account?<id>")]
+pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Template {
+    todo!()
 }
 
 #[derive(Debug, FromForm, Default, Serialize, Clone)]
@@ -37,12 +35,13 @@ pub struct SuccessContext {
     id: String,
 }
 
-#[post("/edit/client?<id>", data = "<form>")]
-pub async fn act_edit_client(
+#[post("/edit/account?<id>", data = "<form>")]
+pub async fn act_edit_account(
     mut db: Connection<BankManage>,
     id: String,
     form: Form<Contextual<'_, ProfileUpdateSubmit>>,
 ) -> (Status, Template) {
+    todo!();
     let template;
     if let Some(submission) = form.value.clone() {
         let update_result = sqlx::query(
@@ -93,23 +92,27 @@ pub async fn act_edit_client(
     (form.context.status(), template)
 }
 
-#[get("/delete/client?<id>")]
-pub async fn delete_client(mut db: Connection<BankManage>, id: String) -> Template {
-    eprintln!("delete {id}");
-    // match db
-    //     .run(move |db| db.batch_execute(&format!("delete from client where clientID={}", id)))
-    //     .await
-    match sqlx::query("delete from client where clientID=?")
-        .bind(id)
-        .execute(&mut *db)
+#[get("/delete/account?<id>")]
+pub async fn delete_account(mut db: Connection<BankManage>, id: String) -> Template {
+    let template;
+    db.execute("START TRANSACTION")
         .await
-    {
-        Ok(_) => Template::render("delete-client-success", &Context::default()),
-        Err(e) => Template::render(
-            "error",
-            &crate::utility::ErrorContext {
-                info: format!("Error deleting client: {e_info}", e_info = e.to_string()),
-            },
-        ),
+        .expect("Error starting a transaction");
+    match delete_account_and_own(&mut db, id).await {
+        Ok(_) => template = Template::render("delete-account-success", &Context::default()),
+        Err(e) => {
+            db.execute("ROLLBACK").await.expect(&format!(
+                "Error rolling back: {e_info}",
+                e_info = e.to_string()
+            ));
+            template = Template::render(
+                "error",
+                &ErrorContext {
+                    info: format!("Error deleting account: {e_info}", e_info = e.to_string()),
+                },
+            )
+        }
     }
+    db.execute("COMMIT").await.expect("Error committing");
+    template
 }

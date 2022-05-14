@@ -33,7 +33,7 @@ pub struct Account {
     pub openDate: NaiveDate,
 }
 
-#[derive(PartialEq, sqlx::FromRow, Debug)]
+#[derive(PartialEq, sqlx::FromRow, Debug, Clone)]
 pub struct SavingAccount {
     pub accountID: String,
     pub balance: Option<sqlx::types::BigDecimal>,
@@ -42,7 +42,7 @@ pub struct SavingAccount {
     pub currencyType: Option<String>,
 }
 
-#[derive(PartialEq, sqlx::FromRow, Debug)]
+#[derive(PartialEq, sqlx::FromRow, Debug, Clone)]
 pub struct CheckingAccount {
     pub accountID: String,
     pub balance: Option<sqlx::types::BigDecimal>,

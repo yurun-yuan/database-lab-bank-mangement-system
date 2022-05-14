@@ -69,8 +69,7 @@ macro_rules! get_search_result {
                 let mut filter_results: HashMap<String, ($struct_name, HashMap<String, String>)> = HashMap::new();
                 $(
                     if(searchOption.contains(&concat!(stringify!($struct_name), ".", stringify!($attr)).to_string())){
-                        let search_copy = search_ref.clone();
-                        let query_statement = format!(concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'"), search_copy);
+                        let query_statement = format!(concat!("SELECT * FROM ", stringify!($table_name), " WHERE ", stringify!($attr), " LIKE '%{0}%'"), search_ref);
                         let search_results=sqlx::query_as::<_, $struct_name>(&query_statement).fetch_all(&mut **db).await.unwrap_or(vec![]);
                         for search_result in search_results {
                             let new_value = (

@@ -1,4 +1,4 @@
-use crate::utility::ErrorContext;
+use crate::utility::{ErrorContext, GenericError};
 
 use super::preludes::rocket_prelude::*;
 
@@ -25,7 +25,7 @@ pub fn new_client() -> Template {
 async fn add_client(
     db: &mut Connection<BankManage>,
     new_client: Client,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), GenericError> {
     sqlx::query(
         "INSERT INTO client (clientID,
                                                 employeeID,

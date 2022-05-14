@@ -11,8 +11,10 @@ mod new_client;
 mod preludes;
 mod search;
 use preludes::rocket_prelude::*;
+mod account_manage;
 mod account_profile;
 mod client_profile;
+mod edit_account;
 mod edit_client;
 mod new_account;
 mod utility;
@@ -33,7 +35,10 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 edit_client::delete_client,
                 new_account::new_account,
                 new_account::submit,
-                account_profile::client_profile
+                account_profile::client_profile,
+                edit_account::get_edit_account,
+                edit_account::act_edit_account,
+                edit_account::delete_account
             ],
         )
         .attach(Template::fairing())

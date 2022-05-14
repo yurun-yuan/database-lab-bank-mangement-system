@@ -1,5 +1,7 @@
 use rocket::futures::TryStreamExt;
 
+use crate::utility::GenericError;
+
 use super::preludes::rocket_prelude::*;
 use std::vec;
 
@@ -12,7 +14,7 @@ pub struct ClientProfileContext {
 pub async fn query_client_by_id(
     db: &mut Connection<BankManage>,
     id: String,
-) -> Result<Client, Box<dyn std::error::Error>> {
+) -> Result<Client, GenericError> {
     Ok(
         sqlx::query_as!(Client, "SELECT * FROM client WHERE clientID=?", id)
             .fetch_one(&mut **db)
@@ -23,7 +25,7 @@ pub async fn query_client_by_id(
 async fn query_associated_accounts(
     db: &mut Connection<BankManage>,
     id: String,
-) -> Result<Vec<String>, Box<dyn std::error::Error + Sync + std::marker::Send + 'static>> {
+) -> Result<Vec<String>, GenericError> {
     let mut result = vec![];
     let mut rows = sqlx::query("SELECT accountID FROM own WHERE clientID=?")
         .bind(id)

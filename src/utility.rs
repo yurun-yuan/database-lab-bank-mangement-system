@@ -2,6 +2,8 @@ use std::{ops::Mul, usize};
 
 use serde::Serialize;
 
+pub type GenericError = Box<dyn std::error::Error + Send + Sync + 'static>;
+
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct ErrorContext {
     pub info: String,
