@@ -1,8 +1,9 @@
 use super::preludes::rocket_prelude::*;
 use crate::{
-    error_template,
+    commit, error_template, rollback, start_transaction,
     utility::{get_list_from_input, GenericError},
 };
+use sqlx::Executor;
 
 #[get("/new/loan")]
 pub async fn get_new_loan() -> Template {
@@ -30,6 +31,7 @@ pub async fn submit(
             )
         }
     };
+    start_transaction!(db);
     let loanID = uuid::Uuid::new_v4().to_string();
     match add_loan_attr(
         &mut db,
@@ -40,19 +42,25 @@ pub async fn submit(
     .await
     {
         Ok(_) => (),
-        Err(e) => return (status, error_template!(e, "Error adding loan attributes")),
+        Err(e) => {
+            rollback!(db);
+            return (status, error_template!(e, "Error adding loan attributes"));
+        }
     }
     for client_id in get_list_from_input::<Vec<_>>(&value.clientIDs) {
         match add_receiveloan_relation(&mut db, loanID.clone(), client_id).await {
             Ok(_) => (),
             Err(e) => {
+                rollback!(db);
                 return (
                     status,
                     error_template!(e, "Error adding loan receiving relation"),
-                )
+                );
             }
         }
     }
+
+    commit!(db);
     (
         status,
         Template::render("new-loan-success", &Context::default()),
