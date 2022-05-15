@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
 use super::preludes::rocket_prelude::*;
-use crate::{
-    commit, error_template, rollback, start_transaction, unwrap_or, unwrap_or_return,
-};
+use crate::{commit, error_template, rollback, start_transaction, unwrap_or, unwrap_or_return};
 use bigdecimal::Zero;
 use chrono::Local;
 use sqlx::Executor;

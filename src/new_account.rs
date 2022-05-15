@@ -23,7 +23,8 @@ pub async fn submit(
             match result {
                 Ok(id) => {
                     commit!(db);
-                    template = Template::render("new-account-success", &HashMap::from([("id", &id)]))
+                    template =
+                        Template::render("new-account-success", &HashMap::from([("id", &id)]))
                 }
                 Err(e) => {
                     rollback!(db);

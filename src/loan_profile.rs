@@ -100,8 +100,12 @@ pub async fn query_loan(
         sqlx::query_as!(ReceiveLoan, "SELECT * FROM receiveLoan WHERE loanID=?", id)
             .fetch_all(&mut **db)
             .await?;
-    let associated_payments = sqlx::query_as!(Payment, "SELECT * FROM payment WHERE loanID=? ORDER BY date", id)
-        .fetch_all(&mut **db)
-        .await?;
+    let associated_payments = sqlx::query_as!(
+        Payment,
+        "SELECT * FROM payment WHERE loanID=? ORDER BY date",
+        id
+    )
+    .fetch_all(&mut **db)
+    .await?;
     Ok((loan, associated_clients, associated_payments))
 }

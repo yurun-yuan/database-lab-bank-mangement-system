@@ -83,6 +83,6 @@ macro_rules! unwrap_or {
 #[macro_export]
 macro_rules! unwrap_or_return {
     ($result:  expr, $info: literal) => {
-        crate::unwrap_or!($result, e, { return error_template!(e, $info) })
+        $crate::unwrap_or!($result, e, { return error_template!(e, $info) })
     };
 }

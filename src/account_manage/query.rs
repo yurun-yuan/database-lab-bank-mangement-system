@@ -27,9 +27,7 @@ pub async fn query_account_by_id(
                 .await?
                 .try_get::<'_, String, _>(0)
             {
-                Ok(subbranch) => {
-                    Ok((SpecificAccount::SavingAccount(saving_account), subbranch))
-                }
+                Ok(subbranch) => Ok((SpecificAccount::SavingAccount(saving_account), subbranch)),
                 Err(e) => Err(Box::new(e)),
             }
         }
@@ -51,12 +49,10 @@ pub async fn query_account_by_id(
                     .await?
                     .try_get::<'_, String, _>(0)
                     {
-                        Ok(subbranch) => {
-                            Ok((
-                                SpecificAccount::CheckingAccount(checking_account),
-                                subbranch,
-                            ))
-                        }
+                        Ok(subbranch) => Ok((
+                            SpecificAccount::CheckingAccount(checking_account),
+                            subbranch,
+                        )),
                         Err(e) => Err(Box::new(e)),
                     }
                 }

@@ -36,7 +36,9 @@ pub async fn account_profile(mut db: Connection<BankManage>, id: String) -> Temp
                         ),
                         (
                             "Currency type".to_string(),
-                            saving_account.currencyType.unwrap_or_else(|| "None".to_string()),
+                            saving_account
+                                .currencyType
+                                .unwrap_or_else(|| "None".to_string()),
                         ),
                     ],
                     associated_clients,

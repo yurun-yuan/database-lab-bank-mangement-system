@@ -5,7 +5,8 @@ use sqlx::Executor;
 use super::preludes::rocket_prelude::*;
 use crate::{
     account_manage::{delete::*, update::*},
-    commit, error_template, rollback, start_transaction, utility::get_list_from_input,
+    commit, error_template, rollback, start_transaction,
+    utility::get_list_from_input,
 };
 
 #[get("/edit/account?<id>")]
@@ -118,7 +119,8 @@ pub async fn act_edit_checking_account(
     }
     let submission = form.value.as_ref().unwrap();
     start_transaction!(db);
-    let updated_associated_client_IDs: std::collections::HashSet<String> = get_list_from_input(&submission.clientIDs);
+    let updated_associated_client_IDs: std::collections::HashSet<String> =
+        get_list_from_input(&submission.clientIDs);
     match update_checking_account_and_own(
         &mut db,
         id.clone(),

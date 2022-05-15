@@ -1,6 +1,6 @@
-use rocket::futures::TryStreamExt;
-use crate::{error_template, utility::GenericError};
 use super::preludes::rocket_prelude::*;
+use crate::{error_template, utility::GenericError};
+use rocket::futures::TryStreamExt;
 use std::vec;
 
 #[derive(Serialize)]
