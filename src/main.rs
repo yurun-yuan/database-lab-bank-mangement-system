@@ -16,7 +16,9 @@ mod account_profile;
 mod client_profile;
 mod edit_account;
 mod edit_client;
+mod loan_profile;
 mod new_account;
+mod new_loan;
 mod utility;
 
 #[launch]
@@ -39,7 +41,10 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 edit_account::get_edit_account,
                 edit_account::act_edit_saving_account,
                 edit_account::act_edit_checking_account,
-                edit_account::delete_account
+                edit_account::delete_account,
+                new_loan::get_new_loan,
+                new_loan::submit,
+                loan_profile::client_profile
             ],
         )
         .attach(Template::fairing())
@@ -60,6 +65,9 @@ macro_rules! get_attr_list_of {
     (Account)=>{
         get_attr_list!(Account; accountID)
     };
+    {Loan}=>{
+        get_attr_list!(Loan; loanID)
+    }
 }
 
 #[get("/")]
@@ -67,5 +75,6 @@ fn index() -> Template {
     let mut options = vec![];
     options.extend(get_attr_list_of!(Client).into_iter());
     options.extend(get_attr_list_of!(Account).into_iter());
+    options.extend(get_attr_list_of!(Loan).into_iter());
     Template::render("index", &IndexContext { options })
 }

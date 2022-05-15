@@ -3,18 +3,13 @@ use crate::{error_template, utility::GenericError};
 use super::preludes::rocket_prelude::*;
 
 #[derive(Debug, FromForm, Default, Serialize)]
-pub struct ClientFromForm {
+pub struct Submit {
     clientID: String,
     name: String,
     tel: String,
     address: String,
     contactname: String,
     contactemail: String,
-}
-
-#[derive(Debug, FromForm, Default, Serialize)]
-pub struct Submit {
-    client: ClientFromForm,
 }
 
 #[get("/new/client")]
@@ -28,16 +23,16 @@ async fn add_client(
 ) -> Result<(), GenericError> {
     sqlx::query(
         "INSERT INTO client (clientID,
-                                                employeeID,
-                                                clientName,
-                                                clientTel,
-                                                clientAddr,
-                                                contactName,
-                                                contactTel,
-                                                contactEmail,
-                                                contactRelationship,
-                                                serviceType) VALUES
-                                                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                employeeID,
+                                clientName,
+                                clientTel,
+                                clientAddr,
+                                contactName,
+                                contactTel,
+                                contactEmail,
+                                contactRelationship,
+                                serviceType) VALUES
+                                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(new_client.clientID)
     .bind(new_client.employeeID)
@@ -62,11 +57,11 @@ pub async fn submit(
     let template = match form.value {
         Some(ref submission) => {
             let new_client = Client {
-                clientID: submission.client.clientID.clone(),
-                clientName: Some(submission.client.name.clone()),
-                clientTel: Some(submission.client.tel.clone()),
-                clientAddr: Some(submission.client.address.clone()),
-                contactName: Some(submission.client.contactname.clone()),
+                clientID: submission.clientID.clone(),
+                clientName: Some(submission.name.clone()),
+                clientTel: Some(submission.tel.clone()),
+                clientAddr: Some(submission.address.clone()),
+                contactName: Some(submission.contactname.clone()),
                 ..Client::default()
             };
             match add_client(&mut db, new_client).await {

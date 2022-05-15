@@ -21,6 +21,7 @@ CREATE TABLE `savingaccount` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `loan` (
   `loanID` char(64) NOT NULL,
+  `amount` decimal(64, 2) NOT NULL,
   `subbranchName` varchar(64) NOT NULL,
   PRIMARY KEY (`loanID`),
   KEY `FK_paidby` (`subbranchName`),
@@ -28,7 +29,8 @@ CREATE TABLE `loan` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `payment` (
   `loanID` char(64) NOT NULL,
-  `amount` decimal(64, 2) DEFAULT NULL,
+  `date` date NOT NULL,
+  `amount` decimal(64, 2) NOT NULL,
   PRIMARY KEY (`loanID`),
   CONSTRAINT `FK_pay` FOREIGN KEY (`loanID`) REFERENCES `loan` (`loanID`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
@@ -111,5 +113,3 @@ CREATE TABLE `accountmanagement` (
   CONSTRAINT `FK_accountmanagement_client` FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FK_accountmanagement_subbranch` FOREIGN KEY (`subbranchName`) REFERENCES `subbranch` (`subbranchName`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
-
-INSERT INTO `subbranch` (`subbranchName`, `city`) VALUES ('subbranchName0', 'hefei');

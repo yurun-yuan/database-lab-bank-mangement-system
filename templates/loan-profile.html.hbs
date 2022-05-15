@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>Client Profile</title>
+    <title>Loan Info</title>
     <link rel="stylesheet" href="/form-style.css">
     <style>
         .container {
@@ -27,19 +27,16 @@
         </div>
     </nav>
     <div class="container">
-        <h1>{{client.clientName}}'s Profile</h1>
-
+        <h1>Account Information</h1>
+        <h4>Status: <b>{{status}}</b></h4>
+        <h5>Paid amount: <u>{{paid}}</u>, Unpaid amount: <u>{{unpaid}}</u></h5>
         <fieldset>
             <legend>Basics</legend>
             <div class="row">
                 <div class="col">
-                    Name <b>{{client.clientName}}</b>
-                    <!-- required -->
-                </div>
-                <div class="col">
-                    ID <b id="clientID">{{client.clientID}}</b>
+                    Loan ID <b id="loanID">{{loanID}}</b>
 
-                    <button type="button" class="copy_button" onclick="copyEvent('clientID')"><img
+                    <button type="button" class="copy_button" onclick="copyEvent('loanID')"><img
                             src="/images/clipboard.svg" height="18" width="19"></button>
 
                     <style>
@@ -62,83 +59,45 @@
                     </script>
                 </div>
                 <div class="col">
-                    Tel <b>{{client.clientTel}}</b>
+                    Subbranch <b>{{subbranch}}</b>
                     <!-- required pattern=".*@.*"/> -->
                 </div>
             </div>
-
-            <div class="row">
-                <div class="col">
-                    Address <b>{{client.clientAddr}}</b>
-                    <!--   required minlength="6" value="" /> -->
-                </div>
-
-                <div class="col">
-                    <!--   required minlength="6" value="" /> -->
-                </div>
+            <div class="col">
+                Amount <b>{{amount}}</b>
+                <!-- required pattern=".*@.*"/> -->
             </div>
+
         </fieldset>
 
         <fieldset>
-            <legend>Associated Accounts</legend>
-            {{#if accoutns}}
-            {{#each accounts}}
+            <legend>Associated Clients</legend>
+            {{#each associated_clients}}
             <div class="row">
                 <div class="col">
-                    Associated account: <a href="/profile/account?id={{this}}"><b>{{this}}</b></a>
-                    <!-- required -->
+                    Associated client: <a href="/profile/client?id={{this}}"><b>{{this}}</b></a>
                 </div>
             </div>
             {{/each}}
-            {{else}}
-            <p><u>No associated account</u></p>
-            {{/if}}
-
-
         </fieldset>
 
         <fieldset>
-            <legend>Associated Loans</legend>
-            {{#if loans}}
-            {{#each loans}}
+            <legend>Payments</legend>
+            {{#each payments}}
             <div class="row">
                 <div class="col">
-                    Associated loan: <a href="/profile/loan?id={{this}}"><b>{{this}}</b></a>
-                    <!-- required -->
+                    {{this.date}}: <b>{{this.amount}}</b>
                 </div>
             </div>
             {{/each}}
-            {{else}}
-            <p><u>No associated loan</u></p>
-            {{/if}}
-
-        </fieldset>
-
-        <fieldset>
-            <legend>Contact</legend>
-
-            <div class="row">
-                <div class="col">
-                    Contact Name <b>{{client.contactName}}</b>
-                    <!-- required -->
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    Contact Email <b>{{client.contactEmail}}</b>
-                    <!-- <input type="date" name="submission.date" id="date" value="2020&#45;12&#45;26"> -->
-                </div>
-            </div>
-
         </fieldset>
         <div id="profile-buttons">
             <div class="row">
                 <div class="col" align="right">
-                    <a href="/edit/client?id={{client.clientID}}">
-                        <button id="editbutton">Edit</button>
+                    <a href="/new/payment?id={{loadID}}">
+                        <button id="editbutton">Pay</button>
                     </a>
-                    <a href="/delete/client?id={{client.clientID}}">
+                    <a href="/delete/loan?id={{loadID}}">
                         <button id="deletebutton">Delete</button>
                     </a>
                 </div>

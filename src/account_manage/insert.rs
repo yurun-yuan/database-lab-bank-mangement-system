@@ -17,11 +17,11 @@ pub async fn add_new_account_and_own(
     submission: &AccountSubmit,
 ) -> Result<(), GenericError> {
     let account_id = add_account_entity(db, submission).await?;
-    let clientIDs = submission.clientIDs.split_whitespace();
+    let clientIDs: Vec<_> = crate::utility::get_list_from_input(&submission.clientIDs);
     for client_id in clientIDs {
         add_owning_relation(
             db,
-            client_id.to_string(),
+            client_id,
             account_id.clone(),
             submission.accountType.clone(),
             submission.subbranchName.clone(),

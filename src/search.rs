@@ -160,5 +160,37 @@ pub async fn search(
         }
     }
 
+    // search among loans
+    if searchOption.contains(&"Loan.loanID".to_string()) {
+        let loan_results: Vec<Loan> = sqlx::query_as(&format!(
+            "SELECT * FROM loan WHERE loanID LIKE '%{}%'",
+            search
+        ))
+        .fetch_all(&mut *db)
+        .await
+        .unwrap_or_else(|e| {
+            eprintln!("Error querying loan: {e}");
+            vec![]
+        });
+
+        for loan_result in loan_results {
+            result_view.results.push(SearchResultView {
+                href: "/profile/loan?id=".to_string() + &loan_result.loanID,
+                result_name: "Loan: ".to_string() + &loan_result.loanID,
+                result_subtitle: "".to_string(),
+                result_desc: [
+                    (
+                        "Loan ID".to_string(),
+                        hightlight_string(&search, &loan_result.loanID),
+                    ),
+                    ("Subbranch".to_string(), loan_result.subbranchName),
+                    ("Amount".to_string(), loan_result.amount.to_string()),
+                ]
+                .into_iter()
+                .collect(),
+            });
+        }
+    }
+
     Template::render("results", &result_view)
 }

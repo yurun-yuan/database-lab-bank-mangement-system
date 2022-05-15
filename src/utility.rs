@@ -1,4 +1,4 @@
-use std::usize;
+use std::{str::SplitWhitespace, usize};
 
 use serde::Serialize;
 
@@ -7,6 +7,15 @@ pub type GenericError = Box<dyn std::error::Error + Send + Sync + 'static>;
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct ErrorContext {
     pub info: String,
+}
+
+pub fn get_list_from_input<Container: std::iter::FromIterator<std::string::String>>(
+    input: &str,
+) -> Container {
+    input
+        .split_whitespace()
+        .map(|s| s.to_string())
+        .collect::<Container>()
 }
 
 #[macro_export]
@@ -59,5 +68,15 @@ macro_rules! error_template {
                 info: format!("{}", $info),
             },
         )
+    };
+}
+
+#[macro_export]
+macro_rules! unwrap_or {
+    ($result: expr,$error: ident, $or: block) => {
+        match $result {
+            Ok(o) => o,
+            Err($error) => $or,
+        }
     };
 }
