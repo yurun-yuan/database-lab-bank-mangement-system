@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::preludes::rocket_prelude::*;
 use crate::{account_manage::insert::*, start_transaction};
 use crate::{commit, error_template, rollback};
@@ -19,9 +21,9 @@ pub async fn submit(
             start_transaction!(db);
             let result = add_new_account_and_own(&mut db, submission).await;
             match result {
-                Ok(()) => {
+                Ok(id) => {
                     commit!(db);
-                    template = Template::render("new-account-success", &form.context)
+                    template = Template::render("new-account-success", &HashMap::from([("id", &id)]))
                 }
                 Err(e) => {
                     rollback!(db);

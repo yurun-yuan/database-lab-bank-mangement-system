@@ -66,3 +66,10 @@ pub struct ReceiveLoan {
     pub loanID: String,
     pub clientID: String,
 }
+
+#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone)]
+pub struct Subbranch {
+    pub subbranchName: String,
+    pub city: String,
+    pub subbranchAsset: sqlx::types::BigDecimal,
+}

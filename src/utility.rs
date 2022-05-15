@@ -1,4 +1,4 @@
-use std::{str::SplitWhitespace, usize};
+use std::usize;
 
 use serde::Serialize;
 
@@ -50,7 +50,7 @@ macro_rules! commit {
 
 #[macro_export]
 macro_rules! error_template {
-    ($error: ident, $info: literal) => {
+    ($error: ident, $info: expr) => {
         Template::render(
             "error",
             &$crate::utility::ErrorContext {
@@ -61,7 +61,7 @@ macro_rules! error_template {
     ($error: ident) => {
         error_template!($error, "Exception occurs! ")
     };
-    ($info: literal) => {
+    ($info: expr) => {
         Template::render(
             "error",
             &$crate::utility::ErrorContext {
@@ -78,5 +78,11 @@ macro_rules! unwrap_or {
             Ok(o) => o,
             Err($error) => $or,
         }
+    };
+}
+#[macro_export]
+macro_rules! unwrap_or_return {
+    ($result:  expr, $info: literal) => {
+        crate::unwrap_or!($result, e, { return error_template!(e, $info) })
     };
 }

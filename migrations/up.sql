@@ -6,8 +6,8 @@ CREATE TABLE `account` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `subbranch` (
   `subbranchName` varchar(64) NOT NULL,
-  `city` varchar(64) DEFAULT NULL,
-  `subbranchAsset` decimal(64, 2) DEFAULT NULL,
+  `city` varchar(64) NOT NULL,
+  `subbranchAsset` decimal(64, 2) NOT NULL,
   PRIMARY KEY (`subbranchName`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `savingaccount` (
@@ -31,7 +31,6 @@ CREATE TABLE `payment` (
   `loanID` char(64) NOT NULL,
   `date` date NOT NULL,
   `amount` decimal(64, 2) NOT NULL,
-  PRIMARY KEY (`loanID`),
   CONSTRAINT `FK_pay` FOREIGN KEY (`loanID`) REFERENCES `loan` (`loanID`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `department` (

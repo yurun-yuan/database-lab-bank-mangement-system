@@ -15,7 +15,7 @@ pub struct AccountSubmit {
 pub async fn add_new_account_and_own(
     db: &mut Connection<BankManage>,
     submission: &AccountSubmit,
-) -> Result<(), GenericError> {
+) -> Result<String, GenericError> {
     let account_id = add_account_entity(db, submission).await?;
     let clientIDs: Vec<_> = crate::utility::get_list_from_input(&submission.clientIDs);
     for client_id in clientIDs {
@@ -28,7 +28,7 @@ pub async fn add_new_account_and_own(
         )
         .await?;
     }
-    Ok(())
+    Ok(account_id)
 }
 
 /// Add entity to `account`, `savingaccount`/`checkingaccount`

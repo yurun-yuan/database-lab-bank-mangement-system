@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::preludes::rocket_prelude::*;
 use crate::{
     commit, error_template, rollback, start_transaction,
@@ -16,6 +18,7 @@ pub struct Submit {
     clientIDs: String,
     amount: String,
 }
+
 #[post("/new/loan", data = "<form>")]
 pub async fn submit(
     mut db: Connection<BankManage>,
@@ -63,7 +66,7 @@ pub async fn submit(
     commit!(db);
     (
         status,
-        Template::render("new-loan-success", &Context::default()),
+        Template::render("new-loan-success", &HashMap::from([("id", loanID)])),
     )
 }
 

@@ -14,7 +14,7 @@ pub struct AccountProfileContext {
 }
 
 #[get("/profile/account?<id>")]
-pub async fn client_profile(mut db: Connection<BankManage>, id: String) -> Template {
+pub async fn account_profile(mut db: Connection<BankManage>, id: String) -> Template {
     let associated_clients = match query_associated_clients(&mut db, id.clone()).await {
         Ok(clients) => clients,
         Err(e) => return error_template!(e),

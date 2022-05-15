@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>New loan</title>
+    <title>New payment</title>
     <link rel="stylesheet" href="/form-style.css">
     <style>
         .container {
@@ -27,26 +27,15 @@
         </div>
     </nav>
     <div class="container">
-        <h1>New Loan</h1>
+        <h1>New Payment</h1>
 
-        <form action="/new/loan" method="post" enctype="multipart/form-data">
+        <form action="/new/payment?id={{id}}" method="post" enctype="multipart/form-data">
             <fieldset>
-                <legend>Profile</legend>
-                <div class="row">
-                    <div class="col">
-                        From subbranch <input type="text" type="text" name="subbranch">
-                        <!-- required -->
-                    </div>
-                    <div class="col">
-                        IDs of associated clients <input type="text" type="text" name="clientIDs">
-                        <!-- required -->
-                    </div>
-                </div>
-
+                {{!-- <legend></legend> --}}
                 <div class="row">
                     <div class="col">
                         Amount <input type="text" type="text" name="amount">
-                        <!-- required pattern=".*@.*"/> -->
+                        <!-- required -->
                     </div>
                 </div>
             </fieldset>

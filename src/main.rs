@@ -14,11 +14,13 @@ use preludes::rocket_prelude::*;
 mod account_manage;
 mod account_profile;
 mod client_profile;
+mod delete_payment;
 mod edit_account;
 mod edit_client;
 mod loan_profile;
 mod new_account;
 mod new_loan;
+mod new_payment;
 mod utility;
 
 #[launch]
@@ -37,14 +39,17 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 edit_client::delete_client,
                 new_account::new_account,
                 new_account::submit,
-                account_profile::client_profile,
+                account_profile::account_profile,
                 edit_account::get_edit_account,
                 edit_account::act_edit_saving_account,
                 edit_account::act_edit_checking_account,
                 edit_account::delete_account,
                 new_loan::get_new_loan,
                 new_loan::submit,
-                loan_profile::client_profile
+                loan_profile::loan_profile,
+                new_payment::get_new_loan,
+                new_payment::submit,
+                delete_payment::delete_payment
             ],
         )
         .attach(Template::fairing())
