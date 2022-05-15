@@ -30,7 +30,7 @@ pub async fn delete_account_and_own(
     db: &mut Connection<BankManage>,
     id: String,
 ) -> Result<(), GenericError> {
-    let account = super::query::query_account_by_id(db, id.clone()).await?;
+    let account = super::query::query_account_by_id(db, &id).await?;
     eprintln!("Start deleting account {id}, {account:?}");
     let associated_clients = super::query::query_associated_clients(db, id.clone()).await?;
 

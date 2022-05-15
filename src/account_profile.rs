@@ -19,27 +19,19 @@ pub async fn account_profile(mut db: Connection<BankManage>, id: String) -> Temp
         Ok(clients) => clients,
         Err(e) => return error_template!(e),
     };
-    match query_account_by_id(&mut db, id.clone()).await {
+    match query_account_by_id(&mut db, &id).await {
         Ok((specific_account, subbranch)) => match specific_account {
             SpecificAccount::SavingAccount(saving_account) => Template::render(
                 "account-profile",
                 AccountProfileContext {
                     accountID: saving_account.accountID,
-                    balance: saving_account.balance.unwrap().to_string(),
-                    openDate: saving_account.openDate.unwrap().to_string(),
+                    balance: saving_account.balance.to_string(),
+                    openDate: saving_account.openDate.to_string(),
                     subbranch,
                     account_type: "saving account".to_string(),
                     details: vec![
-                        (
-                            "Interest".to_string(),
-                            saving_account.interest.unwrap_or(0f32).to_string(),
-                        ),
-                        (
-                            "Currency type".to_string(),
-                            saving_account
-                                .currencyType
-                                .unwrap_or_else(|| "None".to_string()),
-                        ),
+                        ("Interest".to_string(), saving_account.interest.to_string()),
+                        ("Currency type".to_string(), saving_account.currencyType),
                     ],
                     associated_clients,
                 },
@@ -48,13 +40,13 @@ pub async fn account_profile(mut db: Connection<BankManage>, id: String) -> Temp
                 "account-profile",
                 AccountProfileContext {
                     accountID: checking_account.accountID,
-                    balance: checking_account.balance.unwrap().to_string(),
-                    openDate: checking_account.openDate.unwrap().to_string(),
+                    balance: checking_account.balance.to_string(),
+                    openDate: checking_account.openDate.to_string(),
                     subbranch,
                     account_type: "checking account".to_string(),
                     details: vec![(
                         "overdraft".to_string(),
-                        checking_account.overdraft.unwrap().to_string(),
+                        checking_account.overdraft.to_string(),
                     )],
                     associated_clients,
                 },

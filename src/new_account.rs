@@ -19,8 +19,7 @@ pub async fn submit(
     match form.value {
         Some(ref submission) => {
             start_transaction!(db);
-            let result = add_new_account_and_own(&mut db, submission).await;
-            match result {
+            match add_new_account_and_own(&mut db, submission).await {
                 Ok(id) => {
                     commit!(db);
                     template =

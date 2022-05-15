@@ -1,5 +1,10 @@
-use crate::{preludes::rocket_prelude::*, utility::GenericError};
+use crate::{
+    preludes::rocket_prelude::*,
+    subbranch_manage::{query_subbranch, set_subbranch_asset},
+    utility::GenericError,
+};
 use chrono::prelude::*;
+use sqlx::types::BigDecimal;
 
 #[derive(Debug, FromForm, Default, Serialize)]
 pub struct AccountSubmit {
@@ -12,6 +17,7 @@ pub struct AccountSubmit {
     pub interest: String,
 }
 
+/// Add account entity, owning relation and update the assets of subbranch
 pub async fn add_new_account_and_own(
     db: &mut Connection<BankManage>,
     submission: &AccountSubmit,
@@ -28,11 +34,17 @@ pub async fn add_new_account_and_own(
         )
         .await?;
     }
+    let subbranch_asset = query_subbranch(db, &submission.subbranchName)
+        .await?
+        .subbranchAsset;
+    let new_subbranch_asset = subbranch_asset + submission.balance.parse::<BigDecimal>()?;
+    set_subbranch_asset(db, &submission.subbranchName, &new_subbranch_asset).await?;
+
     Ok(account_id)
 }
 
 /// Add entity to `account`, `savingaccount`/`checkingaccount`
-pub async fn add_account_entity(
+async fn add_account_entity(
     db: &mut Connection<BankManage>,
     submission: &AccountSubmit,
 ) -> Result<String, GenericError> {
@@ -57,7 +69,7 @@ pub async fn add_account_entity(
             let currency_type = submission.currencyType.clone();
             sqlx::query("insert into savingaccount(accountID, balance, openDate, interest, currencyType) values (?, ?, ?, ?, ?)")
                 .bind(&account_id)
-                .bind(0)
+                .bind(&submission.balance)
                 .bind(&cur_date)
                 .bind(&interest)
                 .bind(&currency_type)
@@ -71,7 +83,7 @@ pub async fn add_account_entity(
                 .expect("Invalid overdraft");
             sqlx::query("insert into checkingaccount(accountID, balance, openDate, overdraft) values (?, ?, ?, ?)")
             .bind(&account_id)
-            .bind(0)
+            .bind(&submission.balance)
             .bind(&cur_date)
             .bind(&overdraft)
             .execute(&mut **db).await?;

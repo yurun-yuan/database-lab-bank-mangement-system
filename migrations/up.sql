@@ -1,7 +1,7 @@
 CREATE TABLE `account` (
   `accountID` char(64) NOT NULL,
-  `balance` decimal(64, 2) DEFAULT NULL,
-  `openDate` date DEFAULT NULL,
+  `balance` decimal(64, 2) NOT NULL,
+  `openDate` date NOT NULL,
   PRIMARY KEY (`accountID`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `subbranch` (
@@ -12,10 +12,10 @@ CREATE TABLE `subbranch` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `savingaccount` (
   `accountID` char(64) NOT NULL,
-  `balance` decimal(64, 2) DEFAULT NULL,
-  `openDate` date DEFAULT NULL,
-  `interest` float DEFAULT NULL,
-  `currencyType` varchar(64) DEFAULT NULL,
+  `balance` decimal(64, 2) NOT NULL,
+  `openDate` date NOT NULL,
+  `interest` float NOT NULL,
+  `currencyType` varchar(64) NOT NULL,
   PRIMARY KEY (`accountID`),
   CONSTRAINT `FK_accounttype_saving` FOREIGN KEY (`accountID`) REFERENCES `account` (`accountID`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
@@ -96,9 +96,9 @@ CREATE TABLE `own` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE `checkingaccount` (
   `accountID` char(64) NOT NULL,
-  `balance` decimal(64, 2) DEFAULT NULL,
-  `openDate` date DEFAULT NULL,
-  `overdraft` decimal(64, 2) DEFAULT NULL,
+  `balance` decimal(64, 2) NOT NULL,
+  `openDate` date NOT NULL,
+  `overdraft` decimal(64, 2) NOT NULL,
   PRIMARY KEY (`accountID`),
   CONSTRAINT `FK_accountype_checking` FOREIGN KEY (`accountID`) REFERENCES `account` (`accountID`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;

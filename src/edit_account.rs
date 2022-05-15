@@ -18,7 +18,7 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
             .into_iter()
             .fold(String::new(), |joined, cur| joined + " " + &cur),
     };
-    match query_account_by_id(&mut db, id).await {
+    match query_account_by_id(&mut db, &id).await {
         Err(e) => return error_template!(e, "Error fetching account info"),
         Ok((specific_account, _)) => match specific_account {
             SpecificAccount::SavingAccount(saving_account) => {
@@ -28,20 +28,9 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
                     HashMap::from([
                         ("id".to_string(), saving_account.accountID),
                         ("clientIDs".to_string(), clients),
-                        (
-                            "balance".to_string(),
-                            saving_account.balance.unwrap().to_string(),
-                        ),
-                        (
-                            "currencyType".to_string(),
-                            saving_account
-                                .currencyType
-                                .unwrap_or_else(|| "None".to_string()),
-                        ),
-                        (
-                            "interest".to_string(),
-                            saving_account.interest.unwrap_or(0f32).to_string(),
-                        ),
+                        ("balance".to_string(), saving_account.balance.to_string()),
+                        ("currencyType".to_string(), saving_account.currencyType),
+                        ("interest".to_string(), saving_account.interest.to_string()),
                     ]),
                 )
             }
@@ -50,13 +39,10 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
                 HashMap::from([
                     ("id".to_string(), checking_account.accountID),
                     ("clientIDs".to_string(), clients),
-                    (
-                        "balance".to_string(),
-                        checking_account.balance.unwrap().to_string(),
-                    ),
+                    ("balance".to_string(), checking_account.balance.to_string()),
                     (
                         "overdraft".to_string(),
-                        checking_account.overdraft.unwrap().to_string(),
+                        checking_account.overdraft.to_string(),
                     ),
                 ]),
             ),

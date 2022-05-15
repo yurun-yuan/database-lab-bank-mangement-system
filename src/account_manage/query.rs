@@ -7,10 +7,27 @@ pub enum SpecificAccount {
     CheckingAccount(CheckingAccount),
 }
 
+impl From<SpecificAccount> for Account {
+    fn from(specific_account: SpecificAccount) -> Self {
+        match specific_account {
+            SpecificAccount::SavingAccount(saving_account) => Account {
+                accountID: saving_account.accountID,
+                balance: saving_account.balance,
+                openDate: saving_account.openDate,
+            },
+            SpecificAccount::CheckingAccount(checking_account) => Account {
+                accountID: checking_account.accountID,
+                balance: checking_account.balance,
+                openDate: checking_account.openDate,
+            },
+        }
+    }
+}
+
 /// Returns (SpecificAccount, subbranchName).
 pub async fn query_account_by_id(
     db: &mut Connection<BankManage>,
-    id: String,
+    id: &str,
 ) -> Result<(SpecificAccount, String), GenericError> {
     let saving_account_result = sqlx::query_as!(
         SavingAccount,

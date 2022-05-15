@@ -21,6 +21,7 @@ mod loan_profile;
 mod new_account;
 mod new_loan;
 mod new_payment;
+mod subbranch_manage;
 mod utility;
 
 #[launch]

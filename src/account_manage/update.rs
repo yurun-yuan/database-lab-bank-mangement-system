@@ -1,15 +1,25 @@
 use std::collections::HashSet;
 
+use sqlx::types::BigDecimal;
+
 use crate::{preludes::rocket_prelude::*, utility::GenericError};
 
 use super::{delete::AccountType, query::query_account_by_id};
 
-// Modify table `account`
+// Modify table `account` and `subbranch`
 async fn update_generic_account(
     db: &mut Connection<BankManage>,
     id: String,
     balance: &String,
 ) -> std::result::Result<(), GenericError> {
+    let (specific_account, subbranch) = query_account_by_id(db, &id).await?;
+    let account = Account::from(specific_account);
+    let balance: BigDecimal = balance.parse()?;
+    let subbranch_asset = crate::subbranch_manage::query_subbranch(db, &subbranch)
+        .await?
+        .subbranchAsset
+        + (&balance - account.balance);
+    crate::subbranch_manage::set_subbranch_asset(db, &subbranch, &subbranch_asset).await?;
     sqlx::query("UPDATE account SET balance=? WHERE accountID=?")
         .bind(&balance)
         .bind(&id)
@@ -56,7 +66,7 @@ pub async fn update_saving_account_and_own(
     new: SavingAccountSubmit,
     new_associated_client_IDs: HashSet<String>,
 ) -> std::result::Result<(), GenericError> {
-    let (_, subbranch) = query_account_by_id(db, id.clone()).await?;
+    let (_, subbranch) = query_account_by_id(db, &id).await?;
     update_owning_relation(
         db,
         id.clone(),
@@ -104,7 +114,7 @@ pub async fn update_checking_account_and_own(
     new: CheckingAccountSubmit,
     new_associated_client_IDs: HashSet<String>,
 ) -> std::result::Result<(), GenericError> {
-    let (_, subbranch) = query_account_by_id(db, id.clone()).await?;
+    let (_, subbranch) = query_account_by_id(db, &id).await?;
     update_owning_relation(
         db,
         id.clone(),
@@ -117,7 +127,7 @@ pub async fn update_checking_account_and_own(
     Ok(())
 }
 
-pub async fn update_owning_relation(
+async fn update_owning_relation(
     db: &mut Connection<BankManage>,
     id: String,
     account_type: AccountType,

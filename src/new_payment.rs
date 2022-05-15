@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use super::preludes::rocket_prelude::*;
+use crate::subbranch_manage::*;
 use crate::{commit, error_template, rollback, start_transaction, unwrap_or, unwrap_or_return};
 use bigdecimal::Zero;
 use chrono::Local;
@@ -51,13 +52,7 @@ pub async fn submit(
 
     // Rule 2: the payment should not outnumber the assets of the subbranch
     let subbranch = unwrap_or_return!(
-        sqlx::query_as!(
-            Subbranch,
-            "SELECT * FROM subbranch WHERE subbranchName=?",
-            loan.subbranchName
-        )
-        .fetch_one(&mut *db)
-        .await,
+        query_subbranch(&mut db, &loan.subbranchName).await,
         "Fail to fetch information of the subbranch"
     );
     if new_payment > subbranch.subbranchAsset {
@@ -73,11 +68,7 @@ pub async fn submit(
     start_transaction!(db);
     let new_asset = &subbranch.subbranchAsset - &new_payment;
     unwrap_or!(
-        sqlx::query("UPDATE subbranch SET subbranchAsset=? WHERE subbranchName=?")
-            .bind(&loan.subbranchName)
-            .bind(&new_asset.to_string())
-            .execute(&mut *db)
-            .await,
+        set_subbranch_asset(&mut db, &subbranch.subbranchName, &new_asset).await,
         e,
         {
             rollback!(db);
