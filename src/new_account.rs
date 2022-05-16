@@ -7,7 +7,10 @@ use sqlx::Executor;
 
 #[get("/new/account")]
 pub fn new_account() -> Template {
-    Template::render("new-account", &Context::default())
+    Template::render(
+        "new-account",
+        HashMap::from([("restriction", crate::utility::get_restriction())]),
+    )
 }
 
 #[post("/new/account", data = "<form>")]

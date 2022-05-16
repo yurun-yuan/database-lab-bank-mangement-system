@@ -34,19 +34,18 @@
                 <legend>Profile</legend>
                 <div class="row">
                     <div class="col">
-                        From subbranch <input type="text" type="text" name="subbranch">
+                        From subbranch <input type="text" type="text" required name="subbranch">
                         
                     </div>
                     <div class="col">
-                        IDs of associated clients <input type="text" type="text" name="clientIDs">
+                        IDs of associated clients <input type="text" type="text" required name="clientIDs" pattern="{{restriction.id_list}}">
                         
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col">
-                        Amount <input type="text" type="text" name="amount">
-                       
+                        Amount <input type="text" type="text" required name="amount" pattern="{{restriction.amount}}">
                     </div>
                 </div>
             </fieldset>

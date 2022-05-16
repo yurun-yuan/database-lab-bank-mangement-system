@@ -1,4 +1,4 @@
-use std::usize;
+use std::{collections::HashMap, usize};
 
 use serde::Serialize;
 
@@ -16,6 +16,32 @@ pub fn get_list_from_input<Container: std::iter::FromIterator<std::string::Strin
         .split_whitespace()
         .map(|s| s.to_string())
         .collect::<Container>()
+}
+
+macro_rules! str_map {
+    ($($key: expr, $value: expr);+) => {
+        HashMap::<String, String>::from([
+            $(($key.to_string(), $value.to_string()),)+
+        ])
+    };
+    ($($key: expr, $value: expr);+;)=>{str_map!($($key, $value);+)};
+}
+
+pub type Restriction = HashMap<String, String>;
+
+pub fn get_restriction() -> Restriction {
+    let clientID = r"[0-9]{17}([0-9]|X|x)";
+    str_map!(
+        "name",
+        r"[\u4e00-\u9fa5a-zA-Z]([\u4e00-\u9fa5a-zA-Z ]*[\u4e00-\u9fa5a-zA-Z])?"; // chinese/english characters, spaces are permitted in the middle
+        "clientID", clientID;
+        "tel", r"\+?[0-9]*";
+        "email", r"^[a-zA-Z0-9]{1,10}@[a-zA-Z0-9]{1,5}\.[a-zA-Z0-9]{1,5}$";
+        "id_list", format!(r"\s*{clientID}(\s+{clientID})*\s*");
+        "amount", r"[0-9]{1,62}(\.[0-9]{1,2})?";
+        "currency_type", r"[a-zA-Z]+";
+        "float", r"[0-9]{1,}(\.[0-9]{1,})?"
+    )
 }
 
 #[macro_export]

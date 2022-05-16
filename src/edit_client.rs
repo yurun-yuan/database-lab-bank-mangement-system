@@ -1,16 +1,23 @@
-use crate::error_template;
+use crate::{error_template, utility::Restriction};
 
 use super::preludes::rocket_prelude::*;
 
 #[derive(Serialize)]
 pub struct ClientProfileContext {
     client: Client,
+    restriction: Restriction,
 }
 
 #[get("/edit/client?<id>")]
 pub async fn get_edit_client(mut db: Connection<BankManage>, id: String) -> Template {
     match super::client_profile::query_client_by_id(&mut db, id).await {
-        Ok(client) => Template::render("edit-client", &ClientProfileContext { client }),
+        Ok(client) => Template::render(
+            "edit-client",
+            &ClientProfileContext {
+                client,
+                restriction: crate::utility::get_restriction(),
+            },
+        ),
         Err(e) => error_template!(e, "Error loading client"),
     }
 }

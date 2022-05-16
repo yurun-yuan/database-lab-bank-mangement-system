@@ -36,19 +36,19 @@
                 <legend>Info</legend>
                     <div id="shared_opt" class="form-group">
                         <div class="col">
-                            IDs of associated clients <input type="text" name="clientIDs" value="{{clientIDs}}"/>
+                            IDs of associated clients <input type="text" name="clientIDs" value="{{clientIDs}}" required pattern="{{restriction.id_list}}"/>
                             
                         </div>
                         <div class="col">
                             <label>
-                                Balance <input type="text" name="balance" value="{{balance}}" />
+                                Balance <input type="text" name="balance" required value="{{balance}}" pattern="{{restriction.amount}}" />
                             </label>
                         </div>
                     </div>
 
                     <div id="checking_account_opt" class="form-group">
                         <div class="col">
-                            Overdraft <input type="text" name="overdraft" value="{{overdraft}}"/>
+                            Overdraft <input type="text" name="overdraft" required value="{{overdraft}}" pattern="{{restriction.amount}}"/>
                             
                         </div>
                     </div>

@@ -9,7 +9,10 @@ use sqlx::Executor;
 
 #[get("/new/loan")]
 pub async fn get_new_loan() -> Template {
-    Template::render("new-loan", &Context::default())
+    Template::render(
+        "new-loan",
+        HashMap::from([("restriction", crate::utility::get_restriction())]),
+    )
 }
 
 #[derive(Debug, FromForm, Default, Serialize)]

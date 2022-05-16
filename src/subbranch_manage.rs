@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
-use std::ops::{Add, AddAssign};
+use std::ops::AddAssign;
 
 use chrono::Datelike;
 use sqlx::types::BigDecimal;
@@ -70,7 +70,7 @@ pub async fn subbranch_profile(mut db: Connection<BankManage>, name: &str) -> Te
         loans_and_payment.insert((loan, payments));
     }
 
-    let (cur_year, cur_month) = (
+    let (cur_year, _) = (
         chrono::Local::today().year(),
         chrono::Local::today().month0(),
     );

@@ -34,11 +34,11 @@
                 <legend>Profile</legend>
                 <div class="row">
                     <div class="col">
-                        Name <input type="text" type="text" name="client.clientName" value="{{client.clientName}}">
+                        Name <input type="text" type="text" name="client.clientName" required value="{{client.clientName}}" pattern="{{restriction.name}}">
                         
                     </div>
                     <div class="col">
-                        Tel <input type="text" type="text" name="client.clientTel" value="{{client.clientTel}}">
+                        Tel <input type="text" type="text" name="client.clientTel" value="{{client.clientTel}}" pattern="{{restriction.tel}}">
                        
                     </div>
                 </div>
@@ -46,7 +46,6 @@
                 <div class="row">
                     <div class="col">
                         Address <input type="text" type="text" name="client.clientAddr" value="{{client.clientAddr}}">
-                        
                     </div>
 
                     <div class="col">
@@ -60,24 +59,18 @@
 
                 <div class="row">
                     <div class="col">
-                        Contact Name <input type="text" type="text" name="client.contactName" value="{{client.contactName}}">
+                        Contact Name <input type="text" type="text" name="client.contactName" value="{{client.contactName}}" required pattern="{{restriction.name}}">
                         
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col">
-                        Contact Email <input type="text" type="text" name="client.contactEmail" value="{{client.contactEmail}}">
-                        <!-- <input type="date" name="submission.date" id="date" value="2020&#45;12&#45;26"> -->
+                        Contact Email <input type="email" type="text" name="client.contactEmail" value="{{client.contactEmail}}">
                     </div>
                 </div>
 
             </fieldset>
-
-            {{!-- <fieldset>
-                <legend>Service</legend>
-
-            </fieldset> --}}
 
             <br />
             <input type="submit" value="Submit" class="is-full-width" />

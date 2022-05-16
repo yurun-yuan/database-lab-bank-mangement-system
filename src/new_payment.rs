@@ -2,14 +2,27 @@ use std::collections::HashMap;
 
 use super::preludes::rocket_prelude::*;
 use crate::subbranch_manage::*;
+use crate::utility::Restriction;
 use crate::{commit, error_template, rollback, start_transaction, unwrap_or, unwrap_or_return};
 use bigdecimal::Zero;
 use chrono::Local;
 use sqlx::Executor;
 
+#[derive(Serialize)]
+struct NewPaymentContext {
+    id: String,
+    restriction: Restriction,
+}
+
 #[get("/new/payment?<id>")]
 pub async fn get_new_loan(id: String) -> Template {
-    Template::render("new-payment", &HashMap::from([("id", id)]))
+    Template::render(
+        "new-payment",
+        NewPaymentContext {
+            id,
+            restriction: crate::utility::get_restriction(),
+        },
+    )
 }
 
 #[derive(Debug, FromForm, Default, Serialize)]

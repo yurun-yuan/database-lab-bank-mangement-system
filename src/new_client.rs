@@ -1,4 +1,7 @@
-use crate::{error_template, utility::GenericError};
+use crate::{
+    error_template,
+    utility::{GenericError, Restriction},
+};
 
 use super::preludes::rocket_prelude::*;
 
@@ -12,9 +15,19 @@ pub struct Submit {
     contactemail: String,
 }
 
+#[derive(Serialize)]
+pub struct NewClientContext {
+    restriction: Restriction,
+}
+
 #[get("/new/client")]
 pub fn new_client() -> Template {
-    Template::render("new-client", <Submit as Default>::default())
+    Template::render(
+        "new-client",
+        NewClientContext {
+            restriction: crate::utility::get_restriction(),
+        },
+    )
 }
 
 async fn add_client(

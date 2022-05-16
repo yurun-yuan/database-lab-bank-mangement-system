@@ -6,8 +6,27 @@ use super::preludes::rocket_prelude::*;
 use crate::{
     account_manage::{delete::*, update::*},
     commit, error_template, rollback, start_transaction,
-    utility::get_list_from_input,
+    utility::{get_list_from_input, get_restriction, Restriction},
 };
+
+#[derive(Serialize)]
+struct EditSavingAccountContext {
+    id: String,
+    clientIDs: String,
+    balance: String,
+    currencyType: String,
+    interest: String,
+    restriction: Restriction,
+}
+
+#[derive(Serialize)]
+struct EditCheckingAccountContext {
+    id: String,
+    clientIDs: String,
+    balance: String,
+    overdraft: String,
+    restriction: Restriction,
+}
 
 #[get("/edit/account?<id>")]
 pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Template {
@@ -21,30 +40,26 @@ pub async fn get_edit_account(mut db: Connection<BankManage>, id: String) -> Tem
     match query_account_by_id(&mut db, &id).await {
         Err(e) => return error_template!(e, "Error fetching account info"),
         Ok((specific_account, _)) => match specific_account {
-            SpecificAccount::SavingAccount(saving_account) => {
-                eprintln!("saving account: {saving_account:?}");
-                Template::render(
-                    "edit-saving-account",
-                    HashMap::from([
-                        ("id".to_string(), saving_account.accountID),
-                        ("clientIDs".to_string(), clients),
-                        ("balance".to_string(), saving_account.balance.to_string()),
-                        ("currencyType".to_string(), saving_account.currencyType),
-                        ("interest".to_string(), saving_account.interest.to_string()),
-                    ]),
-                )
-            }
+            SpecificAccount::SavingAccount(saving_account) => Template::render(
+                "edit-saving-account",
+                EditSavingAccountContext {
+                    id: saving_account.accountID,
+                    clientIDs: clients,
+                    balance: saving_account.balance.to_string(),
+                    currencyType: saving_account.currencyType,
+                    interest: saving_account.interest.to_string(),
+                    restriction: get_restriction(),
+                },
+            ),
             SpecificAccount::CheckingAccount(checking_account) => Template::render(
                 "edit-checking-account",
-                HashMap::from([
-                    ("id".to_string(), checking_account.accountID),
-                    ("clientIDs".to_string(), clients),
-                    ("balance".to_string(), checking_account.balance.to_string()),
-                    (
-                        "overdraft".to_string(),
-                        checking_account.overdraft.to_string(),
-                    ),
-                ]),
+                EditCheckingAccountContext {
+                    id: checking_account.accountID,
+                    clientIDs: clients,
+                    balance: checking_account.balance.to_string(),
+                    overdraft: checking_account.overdraft.to_string(),
+                    restriction: get_restriction(),
+                },
             ),
         },
     }

@@ -34,23 +34,23 @@
         <legend>Profile</legend>
         <div class="row">
           <div class="col">
-            Name <input type="text" type="text" name="name">
-            
+            Name <input type="text" type="text" name="name" required pattern="{{restriction.name}}">
+            {{!-- Chinese characters, english characters --}}
           </div>
           <div class="col">
-            ID <input type="text" type="text" name="clientID">
-            
+            ID <input type="text" type="text" name="clientID" required pattern="{{restriction.clientID}}">
+            {{!-- 18 digits with the exception that the last character can be 'X' or 'x' --}}
           </div>
         </div>
 
         <div class="row">
           <div class="col">
-            Tel <input type="text" type="text" name="tel">
-           
+            Tel <input type="text" type="text" name="tel", pattern="{{restriction.tel}}">
+           {{!-- nullable digits with an optional leading '+' --}}
           </div>
           <div class="col">
             Address <input type="text" type="text" name="address">
-            
+            {{!-- No restriction --}}
           </div>
 
           <div class="col">
@@ -64,25 +64,21 @@
 
         <div class="row">
           <div class="col">
-            Contact Name <input type="text" type="text" name="contactname">
-            
+            Contact Name <input type="text" type="text" name="contactname" required pattern="{{restriction.name}}">
+            {{!-- Chinese characters, english characters --}}
           </div>
         </div>
 
         <div class="row">
           <div class="col">
-            Contact Email <input type="text" type="text" name="contactemail">
-            <!-- <input type="date" name="submission.date" id="date" value="2020&#45;12&#45;26"> -->
+            Contact Email <input type="email" type="text" name="contactemail">
           </div>
         </div>
-
       </fieldset>
 
       <fieldset>
         <legend>Service</legend>
-
       </fieldset>
-
       <br />
       <input type="submit" value="Submit" class="is-full-width" />
     </form>

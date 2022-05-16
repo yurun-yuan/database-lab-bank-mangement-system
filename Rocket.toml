@@ -5,5 +5,5 @@ template_dir = "templates/"
 bank_manage = { url = "mysql://root:mysql@localhost/bank_manage" }
 
 [release]
-address="192.168.229.96"
-port=8000
+address = "192.168.229.96"
+port = 8000

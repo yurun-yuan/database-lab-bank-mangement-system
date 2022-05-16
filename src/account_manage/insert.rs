@@ -62,10 +62,7 @@ async fn add_account_entity(
     match &submission.accountType as &str {
         "savingAccount" => {
             // into table `savingaccount`
-            let interest = submission
-                .interest
-                .parse::<f64>()
-                .expect("Invalid interest");
+            let interest = submission.interest.parse::<f64>()?;
             let currency_type = submission.currencyType.clone();
             sqlx::query("insert into savingaccount(accountID, balance, openDate, interest, currencyType) values (?, ?, ?, ?, ?)")
                 .bind(&account_id)
@@ -77,10 +74,7 @@ async fn add_account_entity(
         }
         "checkingAccount" => {
             // into table `checkingaccount`
-            let overdraft = submission
-                .overdraft
-                .parse::<f64>()
-                .expect("Invalid overdraft");
+            let overdraft = submission.overdraft.parse::<f64>()?;
             sqlx::query("insert into checkingaccount(accountID, balance, openDate, overdraft) values (?, ?, ?, ?)")
             .bind(&account_id)
             .bind(&submission.balance)

@@ -60,35 +60,34 @@
 
                     <div id="shared_opt" class="form-group">
                         <div class="col">
-                            IDs of associated clients <input type="text" name="clientIDs">
+                            IDs of associated clients <input type="text" required name="clientIDs" pattern="{{restriction.id_list}}">
                             
                         </div>
 
                         <div class="col">
-                            Subbranch Name <input type="text" name="subbranchName">
+                            Subbranch Name <input type="text" required name="subbranchName">
                             
                         </div>
 
                         <div class="col">
-                            Balance <input type="text" name="balance">
-                            
+                            Balance <input type="text" required name="balance" pattern="{{restriction.amount}}">
                         </div>
                     </div>
 
                     <div id="saving_account_opt" class="form-group">
                         <div class="col">
-                            Currency Type <input type="text" name="currencyType">
+                            Currency Type <input type="text"  name="currencyType" pattern="{{restriction.currency_type}}">
                             
                         </div>
                         <div class="col">
-                            Interest <input type="text" name="interest">
+                            Interest <input type="text"  name="interest" pattern="{{restriction.float}}">
                            
                         </div>
                     </div>
 
                     <div id="checking_account_opt" class="form-group">
                         <div class="col">
-                            Overdraft <input type="text" name="overdraft">
+                            Overdraft <input type="text"  name="overdraft" pattern="{{restriction.amount}}">
                             
                         </div>
                     </div>
