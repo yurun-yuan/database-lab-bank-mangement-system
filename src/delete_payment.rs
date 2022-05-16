@@ -5,7 +5,7 @@ use sqlx::Executor;
 #[get("/delete/loan?<id>")]
 pub async fn delete_payment(mut db: Connection<BankManage>, id: String) -> Template {
     let (loan, _, associated_payments) = unwrap_or_return!(
-        super::loan_profile::query_loan(&mut db, id.clone()).await,
+        super::loan_profile::query_loan(&mut db, &id).await,
         "Error querying loan"
     );
     let pay_amount: sqlx::types::BigDecimal =

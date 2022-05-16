@@ -23,7 +23,7 @@ pub struct AccountManagement {
     pub checkingAccountID: Option<String>,
 }
 
-#[derive(PartialEq, sqlx::FromRow, Debug)]
+#[derive(PartialEq, sqlx::FromRow, Debug, Eq, Hash)]
 pub struct Account {
     pub accountID: String,
     pub balance: sqlx::types::BigDecimal,
@@ -47,14 +47,14 @@ pub struct CheckingAccount {
     pub overdraft: sqlx::types::BigDecimal,
 }
 
-#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone)]
+#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone, Hash)]
 pub struct Loan {
     pub loanID: String,
     pub amount: sqlx::types::BigDecimal,
     pub subbranchName: String,
 }
 
-#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone)]
+#[derive(PartialEq, Eq, sqlx::FromRow, Debug, Clone, Hash)]
 pub struct Payment {
     pub loanID: String,
     pub date: NaiveDate,

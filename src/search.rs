@@ -192,5 +192,43 @@ pub async fn search(
         }
     }
 
+    //Search among subbranches
+    if searchOption.contains(&"Subbranch.subbranchName".to_string()) {
+        let subbranch_results: Vec<Subbranch> = sqlx::query_as(&format!(
+            "SELECT * FROM subbranch WHERE subbranchName LIKE '%{}%'",
+            search
+        ))
+        .fetch_all(&mut *db)
+        .await
+        .unwrap_or_else(|e| {
+            eprintln!("Error querying subbranch: {e}");
+            vec![]
+        });
+
+        for subbranch_result in subbranch_results {
+            result_view.results.push(SearchResultView {
+                href: "/profile/subbranch?name=".to_string() + &subbranch_result.subbranchName,
+                result_name: "Subbranch: ".to_string() + &subbranch_result.subbranchName,
+                result_subtitle: "".to_string(),
+                result_desc: [
+                    (
+                        "Name".to_string(),
+                        hightlight_string(&search, &subbranch_result.subbranchName),
+                    ),
+                    (
+                        "City".to_string(),
+                        hightlight_string(&search, &subbranch_result.city),
+                    ),
+                    (
+                        "Assets".to_string(),
+                        subbranch_result.subbranchAsset.to_string(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            });
+        }
+    }
+
     Template::render("results", &result_view)
 }

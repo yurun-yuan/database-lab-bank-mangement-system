@@ -50,7 +50,8 @@ fn rocket() -> rocket::Rocket<rocket::Build> {
                 loan_profile::loan_profile,
                 new_payment::get_new_loan,
                 new_payment::submit,
-                delete_payment::delete_payment
+                delete_payment::delete_payment,
+                subbranch_manage::subbranch_profile,
             ],
         )
         .attach(Template::fairing())
@@ -73,7 +74,10 @@ macro_rules! get_attr_list_of {
     };
     {Loan}=>{
         get_attr_list!(Loan; loanID)
-    }
+    };
+    {Subbranch}=>{
+        get_attr_list!(Subbranch; subbranchName)
+    };
 }
 
 #[get("/")]
@@ -82,5 +86,6 @@ fn index() -> Template {
     options.extend(get_attr_list_of!(Client).into_iter());
     options.extend(get_attr_list_of!(Account).into_iter());
     options.extend(get_attr_list_of!(Loan).into_iter());
+    options.extend(get_attr_list_of!(Subbranch).into_iter());
     Template::render("index", &IndexContext { options })
 }

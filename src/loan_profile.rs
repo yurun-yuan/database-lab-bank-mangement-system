@@ -1,5 +1,5 @@
 use super::preludes::rocket_prelude::*;
-use crate::{error_template, unwrap_or_return, utility::GenericError};
+use crate::{unwrap_or_return, utility::GenericError};
 use bigdecimal::Zero;
 use sqlx::types::BigDecimal;
 
@@ -61,7 +61,7 @@ impl std::fmt::Display for LoanStatus {
 #[get("/profile/loan?<id>")]
 pub async fn loan_profile(mut db: Connection<BankManage>, id: String) -> Template {
     let (loan, associated_clients, associated_payments) =
-        unwrap_or_return!(query_loan(&mut db, id.clone()).await, "Error querying loan");
+        unwrap_or_return!(query_loan(&mut db, &id).await, "Error querying loan");
     let pay_amount: sqlx::types::BigDecimal =
         associated_payments.iter().map(|pay| &pay.amount).sum();
     let status = unwrap_or_return!(
@@ -91,7 +91,7 @@ pub async fn loan_profile(mut db: Connection<BankManage>, id: String) -> Templat
 }
 pub async fn query_loan(
     db: &mut Connection<BankManage>,
-    id: String,
+    id: &str,
 ) -> Result<(Loan, Vec<ReceiveLoan>, Vec<Payment>), GenericError> {
     let loan = sqlx::query_as!(Loan, "SELECT * FROM loan WHERE loanID=?", id)
         .fetch_one(&mut **db)

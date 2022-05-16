@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Subbranch Info</title>
+    <link rel="stylesheet" href="/form-style.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="https://github.com/ryanyuan-yyr/database-lab-bank-mangement-system">About</a></li>
+        </ul>
+        <div class="images">
+            <a href="dashboard.html"><img src="/images/dots.png" alt=""></a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Information of Subbranch {{subbranch_name}}</h1>
+        <fieldset>
+            <legend>Basics</legend>
+            <div class="row">
+                <div class="col">
+                    Location <b id="city">{{subbranch_city}}</b>
+                </div>
+                <div class="col">
+                    Assets <b>{{subbranch_asset}}</b>
+                </div>
+            </div>
+        </fieldset>
+        <style>
+            #saving_account {
+                display: block;
+            }
+
+            #checking_account {
+                display: none;
+            }
+
+            #payment {
+                display: none;
+            }
+        </style>
+        <script type="text/javascript">
+            function switchAccountType(elem) {
+                if (elem.value == "savingAccount") {
+                    document.getElementById('saving_account').style.display = "block";
+                    document.getElementById('checking_account').style.display = "none";
+                    document.getElementById('payment').style.display = "none";
+                }
+                else if (elem.value == "checkingAccount") {
+                    document.getElementById('saving_account').style.display = "none";
+                    document.getElementById('checking_account').style.display = "block";
+                    document.getElementById('payment').style.display = "none";
+                }
+                else {
+                    document.getElementById('saving_account').style.display = "none";
+                    document.getElementById('checking_account').style.display = "none";
+                    document.getElementById('payment').style.display = "block";
+                }
+            }
+        </script>
+
+        <fieldset>
+            <legend>Statistics</legend>
+
+            <select class="form-control input-lg" onchange="switchAccountType(this)" name="statistic_type"
+                form="account_form">
+                <option value="savingAccount">Saving account</option>
+                <option value="checkingAccount">Checking account</option>
+                <option value="payment">Payment</option>
+            </select>
+
+            {{#each statistics}}
+            <div id="{{@key}}">
+                {{#each this}}
+                <fieldset>
+                    <legend>Year {{this.0}}</legend>
+                    {{#each this.1}}
+                    <fieldset>
+                    <legend>Season {{this.0}}</legend>
+                    <div class="row">
+                        {{#each this.1}}
+                        <div class="col">
+                            {{this.0}} <b>{{this.1}}</b>
+                            
+                        </div>
+                        {{/each}}
+                    </div>
+                    </fieldset>
+                    {{/each}}
+                </fieldset>
+                {{/each}}
+            </div>
+            {{/each}}
+        </fieldset>
+        <br />
+    </div>
+</body>
+
+</html>

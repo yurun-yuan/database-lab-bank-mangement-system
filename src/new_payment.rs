@@ -28,7 +28,7 @@ pub async fn submit(
         None => return error_template!("Error adding payment: failed to receive form"),
     };
     let (loan, _, associated_payments) = unwrap_or_return!(
-        super::loan_profile::query_loan(&mut db, id.clone()).await,
+        super::loan_profile::query_loan(&mut db, &id).await,
         "Error querying loan"
     );
     let pay_amount: sqlx::types::BigDecimal =
