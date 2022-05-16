@@ -34,7 +34,7 @@
             <div class="row">
                 <div class="col">
                     Name <b>{{client.clientName}}</b>
-                    
+
                 </div>
                 <div class="col">
                     ID <b id="clientID">{{client.clientID}}</b>
@@ -63,18 +63,18 @@
                 </div>
                 <div class="col">
                     Tel <b>{{client.clientTel}}</b>
-                   
+
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
                     Address <b>{{client.clientAddr}}</b>
-                    
+
                 </div>
 
                 <div class="col">
-                    
+
                 </div>
             </div>
         </fieldset>
@@ -86,7 +86,7 @@
             <div class="row">
                 <div class="col">
                     Associated account: <a href="/profile/account?id={{this}}"><b>{{this}}</b></a>
-                    
+
                 </div>
             </div>
             {{/each}}
@@ -104,7 +104,7 @@
             <div class="row">
                 <div class="col">
                     Associated loan: <a href="/profile/loan?id={{this}}"><b>{{this}}</b></a>
-                    
+
                 </div>
             </div>
             {{/each}}
@@ -120,17 +120,27 @@
             <div class="row">
                 <div class="col">
                     Contact Name <b>{{client.contactName}}</b>
-                    
+                </div>
+                <div class="col">
+                    Contact Relation <b>{{client.contactRelationship}}</b>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
                     Contact Email <b>{{client.contactEmail}}</b>
-                    <!-- <input type="date" name="submission.date" id="date" value="2020&#45;12&#45;26"> -->
+                </div>
+                <div class="col">
+                    Contact Tel <b>{{client.contactTel}}</b>
                 </div>
             </div>
-
+        </fieldset>
+        <fieldset>
+            <legend>Service</legend>
+            <div class="col">
+                Employee ID <b>{{client.employeeID}}</b></div>
+            <div class="col">
+                Service Type <b>{{client.serviceType}}</b></div>
         </fieldset>
         <div id="profile-buttons">
             <div class="row">

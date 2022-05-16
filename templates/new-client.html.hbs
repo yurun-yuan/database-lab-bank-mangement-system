@@ -29,7 +29,7 @@
   <div class="container">
     <h1>New Client</h1>
 
-    <form action="/new/client" method="post" enctype="multipart/form-data">
+    <form id="new_client_form" action="/new/client" method="post" enctype="multipart/form-data">
       <fieldset>
         <legend>Profile</legend>
         <div class="row">
@@ -45,8 +45,8 @@
 
         <div class="row">
           <div class="col">
-            Tel <input type="text" type="text" name="tel", pattern="{{restriction.tel}}">
-           {{!-- nullable digits with an optional leading '+' --}}
+            Tel <input type="text" type="text" name="tel" , pattern="{{restriction.tel}}">
+            {{!-- nullable digits with an optional leading '+' --}}
           </div>
           <div class="col">
             Address <input type="text" type="text" name="address">
@@ -54,7 +54,7 @@
           </div>
 
           <div class="col">
-            
+
           </div>
         </div>
       </fieldset>
@@ -67,17 +67,31 @@
             Contact Name <input type="text" type="text" name="contactname" required pattern="{{restriction.name}}">
             {{!-- Chinese characters, english characters --}}
           </div>
+          <div class="col">
+            Contact Relation <input type="text" type="text" name="contactrelation">
+          </div>
         </div>
 
         <div class="row">
           <div class="col">
             Contact Email <input type="email" type="text" name="contactemail">
           </div>
+          <div class="col">
+            Contact Tel <input type="text" type="text" name="contacttel" pattern="{{restriction.tel}}">
+          </div>
         </div>
       </fieldset>
 
       <fieldset>
         <legend>Service</legend>
+        <div class="col">
+          Employee ID <input type="text" type="text" name="employeeID">
+          Service Type <select class="form-control input-lg" name="servicetype" form="new_client_form">
+            <option value="account">Account service</option>
+            <option value="loan">Loan service</option>
+            <option value="" selected>None</option>
+          </select>
+        </div>
       </fieldset>
       <br />
       <input type="submit" value="Submit" class="is-full-width" />

@@ -10,3 +10,29 @@ INSERT INTO `subbranch` (`subbranchName`, `city`, `subbranchAsset`)
 VALUES ('subbranch4', 'Guangzhou', 100000.00);
 INSERT INTO `subbranch` (`subbranchName`, `city`, `subbranchAsset`)
 VALUES ('subbranch5', 'Nanjing', 100000.00);
+INSERT INTO `department` (
+        `departmentID`,
+        `departmentName`,
+        `departmentType`
+    )
+VALUES(
+        'department0ID',
+        'department0',
+        'departmentType0'
+    );
+INSERT INTO `employee` (
+        `employeeID`,
+        `subbranchName`,
+        `departmentID`,
+        `employeeTel`,
+        `employeeAddr`,
+        `employmentCommenceDate`
+    )
+VALUES(
+        'employee0ID',
+        'subbranch0',
+        'department0ID',
+        '1234567890',
+        'Address for employee0',
+         DATE(NOW())
+    );

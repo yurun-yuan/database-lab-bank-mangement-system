@@ -29,27 +29,29 @@
     <div class="container">
         <h1>Edit {{client.clientName}}'s Profile</h1>
 
-        <form action="/edit/client?id={{client.clientID}}" method="post" enctype="multipart/form-data">
+        <form id="edit_client_form" action="/edit/client?id={{client.clientID}}" method="post" enctype="multipart/form-data">
             <fieldset>
                 <legend>Profile</legend>
                 <div class="row">
                     <div class="col">
-                        Name <input type="text" type="text" name="client.clientName" required value="{{client.clientName}}" pattern="{{restriction.name}}">
-                        
+                        Name <input type="text" type="text" name="clientName" required value="{{client.clientName}}"
+                            pattern="{{restriction.name}}">
+
                     </div>
                     <div class="col">
-                        Tel <input type="text" type="text" name="client.clientTel" value="{{client.clientTel}}" pattern="{{restriction.tel}}">
-                       
+                        Tel <input type="text" type="text" name="clientTel" value="{{client.clientTel}}"
+                            pattern="{{restriction.tel}}">
+
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col">
-                        Address <input type="text" type="text" name="client.clientAddr" value="{{client.clientAddr}}">
+                        Address <input type="text" type="text" name="clientAddr" value="{{client.clientAddr}}">
                     </div>
 
                     <div class="col">
-                        
+
                     </div>
                 </div>
             </fieldset>
@@ -59,17 +61,38 @@
 
                 <div class="row">
                     <div class="col">
-                        Contact Name <input type="text" type="text" name="client.contactName" value="{{client.contactName}}" required pattern="{{restriction.name}}">
-                        
+                        Contact Name <input type="text" type="text" name="contactName" value="{{client.contactName}}"
+                            required pattern="{{restriction.name}}">
+                    </div>
+                    <div class="col">
+                        Contact Relation <input type="text" type="text" value="{{client.contactRelationship}}"
+                            name="contactRelationship">
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col">
-                        Contact Email <input type="email" type="text" name="client.contactEmail" value="{{client.contactEmail}}">
+                        Contact Email <input type="email" type="text" name="contactEmail"
+                            value="{{client.contactEmail}}">
+                    </div>
+                    <div class="col">
+                        Contact Tel <input type="text" type="text" name="contactTel" value="{{client.contactTel}}"
+                            pattern="{{restriction.tel}}">
                     </div>
                 </div>
 
+            </fieldset>
+
+            <fieldset>
+                <legend>Service</legend>
+                <div class="col">
+                    Employee ID <input type="text" type="text" name="employeeID">
+                    Service Type <select class="form-control input-lg" name="serviceType" form="edit_client_form" >
+                        <option value="account" {{#if service_type.0}}selected{{/if}}>Account service</option>
+                        <option value="loan" {{#if service_type.1}}selected{{/if}}>Loan service</option>
+                        <option value="" {{#if service_type.2}}selected{{/if}}>None</option>
+                    </select>
+                </div>
             </fieldset>
 
             <br />

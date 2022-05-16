@@ -1,6 +1,6 @@
 use crate::{
     error_template,
-    utility::{GenericError, Restriction},
+    utility::{validate_string_value, GenericError, Restriction},
 };
 
 use super::preludes::rocket_prelude::*;
@@ -13,6 +13,10 @@ pub struct Submit {
     address: String,
     contactname: String,
     contactemail: String,
+    contactrelation: String,
+    contacttel: String,
+    employeeID: String,
+    servicetype: String,
 }
 
 #[derive(Serialize)]
@@ -30,33 +34,35 @@ pub fn new_client() -> Template {
     )
 }
 
+// NOTE the attributes of new_client should not be None
 async fn add_client(
     db: &mut Connection<BankManage>,
     new_client: Client,
 ) -> Result<(), GenericError> {
-    sqlx::query(
+    sqlx::query(&format!(
         "INSERT INTO client (clientID,
-                                employeeID,
-                                clientName,
-                                clientTel,
-                                clientAddr,
-                                contactName,
-                                contactTel,
-                                contactEmail,
-                                contactRelationship,
-                                serviceType) VALUES
-                                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    )
-    .bind(new_client.clientID)
-    .bind(new_client.employeeID)
-    .bind(new_client.clientName)
-    .bind(new_client.clientTel)
-    .bind(new_client.clientAddr)
-    .bind(new_client.contactName)
-    .bind(new_client.contactTel)
-    .bind(new_client.contactEmail)
-    .bind(new_client.contactRelationship)
-    .bind(new_client.serviceType)
+            clientName,
+            clientTel,
+            clientAddr,
+            contactName,
+            contactTel,
+            contactEmail,
+            contactRelationship,
+            employeeID,
+            serviceType
+            ) VALUES
+            ({}, {}, {}, {}, {}, {}, {}, {}, {}, {})",
+        validate_string_value(&new_client.clientID),
+        validate_string_value(&new_client.clientName.unwrap()),
+        validate_string_value(&new_client.clientTel.unwrap()),
+        validate_string_value(&new_client.clientAddr.unwrap()),
+        validate_string_value(&new_client.contactName.unwrap()),
+        validate_string_value(&new_client.contactTel.unwrap()),
+        validate_string_value(&new_client.contactEmail.unwrap()),
+        validate_string_value(&new_client.contactRelationship.unwrap()),
+        validate_string_value(&new_client.employeeID.unwrap()),
+        validate_string_value(&new_client.serviceType.unwrap()),
+    ))
     .execute(&mut **db)
     .await?;
     Ok(())
@@ -75,7 +81,11 @@ pub async fn submit(
                 clientTel: Some(submission.tel.clone()),
                 clientAddr: Some(submission.address.clone()),
                 contactName: Some(submission.contactname.clone()),
-                ..Client::default()
+                employeeID: Some(submission.employeeID.clone()),
+                contactTel: Some(submission.contacttel.clone()),
+                contactEmail: Some(submission.contactemail.clone()),
+                contactRelationship: Some(submission.contactrelation.clone()),
+                serviceType: Some(submission.servicetype.clone()),
             };
             match add_client(&mut db, new_client).await {
                 Ok(_) => Template::render("new-client-success", &form.context),

@@ -18,6 +18,15 @@ pub fn get_list_from_input<Container: std::iter::FromIterator<std::string::Strin
         .collect::<Container>()
 }
 
+// If `value` is not empty, wraps it with "'"; else returns "NULL"
+pub fn validate_string_value(value: &str) -> String {
+    if value.is_empty() {
+        "NULL".to_string()
+    } else {
+        format!("'{value}'").to_string()
+    }
+}
+
 macro_rules! str_map {
     ($($key: expr, $value: expr);+) => {
         HashMap::<String, String>::from([
