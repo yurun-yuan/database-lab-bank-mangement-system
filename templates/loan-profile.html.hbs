@@ -27,7 +27,7 @@
         </div>
     </nav>
     <div class="container">
-        <h1>Account Information</h1>
+        <h1>Loan Information</h1>
         <h4>Status: <b>{{status}}</b></h4>
         <h5>Paid amount: <u>{{paid}}</u>, Unpaid amount: <u>{{unpaid}}</u></h5>
         <fieldset>
@@ -58,15 +58,15 @@
                         }
                     </script>
                 </div>
+            </div>
+            <div class="row">
                 <div class="col">
                     Subbranch <a href="/profile/subbranch?name={{subbranch}}"><b>{{subbranch}}</b></a>
                 </div>
+                <div class="col">
+                    Amount <b>{{amount}}</b>
+                </div>
             </div>
-            <div class="col">
-                Amount <b>{{amount}}</b>
-
-            </div>
-
         </fieldset>
 
         <fieldset>
