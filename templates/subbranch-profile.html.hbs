@@ -86,18 +86,23 @@
             <div id="{{@key}}">
                 {{#each this}}
                 <fieldset>
-                    <legend>Year {{this.0}}</legend>
-                    {{#each this.1}}
+                    <legend>Year {{this.0}} <b><img src="/images/sack-dollar-solid.svg" height="12" width="12">
+                            {{this.1.0}} <img src="/images/statistic.svg" height="12" width="12"> {{this.1.1}}</b>
+                    </legend>
+                    {{#each this.2}}
                     <fieldset>
-                    <legend>Season {{this.0}}</legend>
-                    <div class="row">
-                        {{#each this.1}}
-                        <div class="col">
-                            {{this.0}} <b>{{this.1}}</b>
-                            
+                        <legend>Season {{this.0}} <b><img src="/images/sack-dollar-solid.svg" height="12" width="12">
+                                {{this.1.0}} <img src="/images/statistic.svg" height="12" width="12">
+                                {{this.1.1}}</b></legend>
+                        <div class="row">
+                            {{#each this.2}}
+                            <div class="col">
+                                {{this.0}} <img src="/images/sack-dollar-solid.svg" height="12" width="12"> <b>
+                                    {{this.1.0}} <img src="/images/statistic.svg" height="12" width="12">
+                                    {{this.1.1}}</b>
+                            </div>
+                            {{/each}}
                         </div>
-                        {{/each}}
-                    </div>
                     </fieldset>
                     {{/each}}
                 </fieldset>

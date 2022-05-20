@@ -33,10 +33,6 @@
             <legend>Basics</legend>
             <div class="row">
                 <div class="col">
-                    Account Type <b>{{account_type}}</b>
-                    
-                </div>
-                <div class="col">
                     Account ID <b id="accountID">{{accountID}}</b>
 
                     <button type="button" class="copy_button" onclick="copyEvent('accountID')"><img
@@ -61,21 +57,26 @@
                         }
                     </script>
                 </div>
+            </div>
+            <div class="row">
                 <div class="col">
-                    Subbranch <b>{{subbranch}}</b>
-                   
+                    Account Type <b>{{account_type}}</b>
+                </div>
+
+                <div class="col">
+                    Subbranch <a href="/profile/subbranch?name={{subbranch}}"><b>{{subbranch}}</b></a>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col">
                     openDate <b>{{openDate}}</b>
-                    
+
                 </div>
 
                 <div class="col">
                     balance <b>{{balance}}</b>
-                    
+
                 </div>
             </div>
         </fieldset>
@@ -86,7 +87,7 @@
             <div class="row">
                 <div class="col">
                     Associated client: <a href="/profile/client?id={{this}}"><b>{{this}}</b></a>
-                    
+
                 </div>
             </div>
             {{/each}}
@@ -98,7 +99,7 @@
             <div class="row">
                 <div class="col">
                     {{this.0}}: <b>{{this.1}}</b>
-                    
+
                 </div>
             </div>
             {{/each}}
