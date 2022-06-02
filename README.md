@@ -11,3 +11,7 @@ To build up the database needed by the program, run [up.sql](migrations\up.sql) 
 To specify the database, change `url` in  [Rocket.toml](Rocket.toml) to your own database. 
 
 A simple `cargo run` or `cargo run -r` if you want to run a release version will deploy the website at the specified port. 
+
+## Report
+
+See [report](doc%5Creport.pdf). 
